@@ -118,8 +118,8 @@ public class Steady_course {
             System.out.println();
             ArrayList<SCPair> speed_periods = steady_speed_periods(totes, 10, 0.1);
             for(int ii=0; ii<3; ii++) {
-                System.out.println("steady_coarse_period: index1=" + course_periods.get(ii).first.index + "  index2=" + course_periods.get(ii).second.index);
-                System.out.println("      in other words: time1=" + course_periods.get(ii).first.stime + "  time2=" + course_periods.get(ii).second.stime);
+                System.out.println("steady_coarse_period: index1=" + speed_periods.get(ii).first.index + "  index2=" + speed_periods.get(ii).second.index);
+                System.out.println("      in other words: time1=" + speed_periods.get(ii).first.stime + "  time2=" + speed_periods.get(ii).second.stime);
             }
     	}
     	
