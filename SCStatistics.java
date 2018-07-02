@@ -193,6 +193,9 @@ public class SCStatistics {
      * @return double - standard deviation (calculated as simple arithmetic mean)
      */
     public static double weighted_stdev(double[] ardoubles, double[] arweights) {
+        if (ardoubles.length != arweights.length)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.weighted_mean - arrays of different length");
+	    
         double dmean = weighted_mean(ardoubles, arweights);
         double dsum_squares = 0.0;
         double dsumweights = 0.0;
