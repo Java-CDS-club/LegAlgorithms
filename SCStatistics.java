@@ -210,10 +210,9 @@ public class SCStatistics {
     //-------------------------------------------------------------------------
     /**
      * Returns two sided quantile of Student's distribution with the 95% confidence interval
-     * @param  inum number of measured data in dataset
+     * @param  inum number of observed/measured data in dataset
      * @return double - quantile of Student's distribution
      * @see https://en.wikipedia.org/wiki/Student%27s_t-distribution
-     * @todo confidence interval could be parameterized
      */
     static double get95StudentQuantil(int inum) {
         if (inum < 1) 
@@ -266,6 +265,120 @@ public class SCStatistics {
             return quantil_infinity; // 1.96
     }
     
+    //-------------------------------------------------------------------------
+    /**
+     * Returns two sided quantile of Student's distribution with the 99% confidence interval
+     * @param  inum number of observed/measured data in dataset
+     * @return double - quantile of Student's distribution
+     */
+    static double get99StudentQuantil(int inum) {
+        if (inum < 1)
+            throw new IllegalArgumentException("Calling ScStatistics.get95StudentQuantil - number of elements leass than 1");
+
+        final double[] quantiles_1_30 = {
+        63.66, 9.925, 5.841, 4.604, 4.032, 3.707, 3.499, 3.355, 3.250, 3.169,
+        3.106, 3.055, 3.012, 2.977, 2.947, 2.921, 2.898, 2.878, 2.861, 2.845,
+        2.831, 2.819, 2.807, 2.797, 2.787, 2.779, 2.771, 2.763, 2.756, 2.750
+        };
+
+        final double[] quantiles_32_50 = { // increment = 2
+        2.739, 2.728, 2.720, 2.712, 2.705, 2.698, 2.692, 2.687, 2.682, 2.678
+        };
+
+        final double[] quantiles_55_70 = { // increment = 5
+        2.668, 2.660, 2.654, 2.648
+        };
+
+        final double[] quantiles_80_100 = { // increment = 10
+        2.639, 2.632, 2.626
+        };
+
+        final double quantil_120 = 2.617;
+
+        final double[] quantiles_150_300 = { // increment = 50
+        2.609, 2.601, 2.596, 2.592
+        };
+
+        final double[] quantiles_400_500 = { // increment = 100
+        2.588, 2.586
+        };
+
+        final double quantil_infinity = 2.576;
+
+        if (inum < 30) return quantiles_1_30[inum-1];
+        else if (inum < 32) return quantiles_1_30[29]; // 2.042
+        else if (inum <= 50) return quantiles_32_50[(inum-32) / 2];
+        else if (inum < 55) return quantiles_32_50[9]; // 2.009
+        else if (inum <= 70) return quantiles_55_70[(inum-55) / 5];
+        else if (inum < 80) return quantiles_55_70[3]; // 1.994
+        else if (inum <= 100) return quantiles_80_100[(inum-80) / 10];
+        else if (inum < 120) return quantiles_80_100[2]; // 1.984
+        else if (inum < 150) return quantil_120; // 1.980
+        else if (inum <= 300) return quantiles_150_300[(inum-150) / 50];
+        else if (inum < 400) return quantiles_150_300[3]; // 1.968
+        else if (inum < 500) return quantiles_400_500[0]; // 1.966
+        else if (inum < 700) return quantiles_400_500[1]; // 1.965
+        else
+            return quantil_infinity; // 1.96
+    }
+
+    //-------------------------------------------------------------------------
+    /**
+     * Returns two sided quantile of Student's distribution with the 99.9% confidence interval
+     * @param  inum number of observed/measured data in dataset
+     * @return double - quantile of Student's distribution
+     */
+    static double get999StudentQuantil(int inum) {
+        if (inum < 1)
+            throw new IllegalArgumentException("Calling ScStatistics.get95StudentQuantil - number of elements leass than 1");
+
+        final double[] quantiles_1_30 = {
+        636.6, 31.96, 12.92, 8.610, 6.869, 5.959, 5.408, 5.041, 4.718, 4.587,
+        4.437, 4.318, 4.221, 4.140, 4.073, 4.015, 3.965, 3.922, 3.883, 3.850,
+        3.819, 3.792, 3.767, 3.745, 3.725, 3.707, 3.690, 3.674, 3.659, 3.646
+        };
+
+        final double[] quantiles_32_50 = { // increment = 2
+        3.622, 3.601, 3.582, 3.566, 3.551, 3.538, 3.526, 3.515, 3.505, 3.496
+        };
+
+        final double[] quantiles_55_70 = { // increment = 5
+        3.476, 3.460, 3.447, 3.435
+        };
+
+        final double[] quantiles_80_100 = { // increment = 10
+        3.416, 3.402, 3.390
+        };
+
+        final double quantil_120 = 3.374;
+
+        final double[] quantiles_150_300 = { // increment = 50
+        3.357, 3.340, 3.330, 3.323
+        };
+
+        final double[] quantiles_400_500 = { // increment = 100
+        3.315, 3.310
+        };
+
+        final double quantil_infinity = 3.291;
+
+        if (inum < 30) return quantiles_1_30[inum-1];
+        else if (inum < 32) return quantiles_1_30[29]; // 2.042
+        else if (inum <= 50) return quantiles_32_50[(inum-32) / 2];
+        else if (inum < 55) return quantiles_32_50[9]; // 2.009
+        else if (inum <= 70) return quantiles_55_70[(inum-55) / 5];
+        else if (inum < 80) return quantiles_55_70[3]; // 1.994
+        else if (inum <= 100) return quantiles_80_100[(inum-80) / 10];
+        else if (inum < 120) return quantiles_80_100[2]; // 1.984
+        else if (inum < 150) return quantil_120; // 1.980
+        else if (inum <= 300) return quantiles_150_300[(inum-150) / 50];
+        else if (inum < 400) return quantiles_150_300[3]; // 1.968
+        else if (inum < 500) return quantiles_400_500[0]; // 1.966
+        else if (inum < 700) return quantiles_400_500[1]; // 1.965
+        else
+            return quantil_infinity; // 1.96
+    }
+
     //-------------------------------------------------------------------------
     /**
      * Equal mean values statistical test. Returns true if two mean values 

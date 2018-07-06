@@ -121,7 +121,8 @@ public class Steady_course {
                 System.out.println("steady_coarse_period: index1=" + speed_periods.get(ii).first.index + "  index2=" + speed_periods.get(ii).second.index);
                 System.out.println("      in other words: time1=" + speed_periods.get(ii).first.stime + "  time2=" + speed_periods.get(ii).second.stime);
             }
-    	}
+        }
+
     	
     	catch(Exception e) {
             System.out.println(e);
