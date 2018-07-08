@@ -319,7 +319,7 @@ public class SCStatistics {
      */
     static double get99StudentQuantil(int inum) {
         if (inum < 1) 
-            throw new IllegalArgumentException("Calling ScStatistics.get95StudentQuantil - number of elements leass than 1");
+            throw new IllegalArgumentException("Calling ScStatistics.get99StudentQuantil - number of elements leass than 1");
         
         final double[] quantiles_1_30 = {
         63.66, 9.925, 5.841, 4.604, 4.032, 3.707, 3.499, 3.355, 3.250, 3.169,
@@ -376,7 +376,7 @@ public class SCStatistics {
      */
     static double get999StudentQuantil(int inum) {
         if (inum < 1) 
-            throw new IllegalArgumentException("Calling ScStatistics.get95StudentQuantil - number of elements leass than 1");
+            throw new IllegalArgumentException("Calling ScStatistics.get999StudentQuantil - number of elements leass than 1");
         
         final double[] quantiles_1_30 = {
         636.6, 31.96, 12.92, 8.610, 6.869, 5.959, 5.408, 5.041, 4.718, 4.587,    
