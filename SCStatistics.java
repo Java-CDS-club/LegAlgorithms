@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 /**
  * SCStatistics - utility methods of mathematical statistics. Various tools for extracting data patterns 
- * and making predictions about the vessels' positions.
+ * and making predictions about the vessels positions.
  */
 public class SCStatistics {
 	
@@ -136,6 +136,28 @@ public class SCStatistics {
 	
     //-------------------------------------------------------------------------
     /**
+     * Returns mean of an sub-array from an array of normally distributed values
+     * @param  ardoubles given array
+     * @param  istart (inclusive) lower index of the sub-array
+     * @param  iend (exclusive) upper index of the sub-array
+     * @return double - mean value (calculated as simple arithmetic mean)
+     */
+    public static double mean(double[] ardoubles, int istart, int iend) {
+        if (0 > istart)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.mean - 'istart' index (" + istart + ") is less than 0.");
+
+        if (ardoubles.length < iend)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.mean - 'iend' index (" + iend + ") is greater than array length.");
+
+        double dsum = 0.0;
+        for (int ii=istart; ii<iend; ii++)
+            dsum += ardoubles[ii];
+
+        return dsum / (iend - istart);
+    }
+	
+    //-------------------------------------------------------------------------
+    /**
      * Returns mean from an array of values with different 'weight' (e.g. probability)
      * @param  ardoubles given array of values
      * @param  arweights given array of weights
@@ -168,6 +190,30 @@ public class SCStatistics {
             dsum_squares += ardoubles[ii]*ardoubles[ii];
         
         return Math.sqrt((dsum_squares - dmean*dmean * ardoubles.length) / (ardoubles.length - 1));
+    }
+    
+    //-------------------------------------------------------------------------
+    /**
+     * Returns standard deviation from a sub-array of normally distributed values (expected mean value is unknown)
+     * @param  ardoubles given array
+     * @param  istart (inclusive) lower index of the sub-array
+     * @param  iend (exclusive) upper index of the sub-array
+     * @return double - standard deviation (calculated as simple arithmetic mean)
+     */
+    public static double stdev(double[] ardoubles, int istart, int iend) {
+        if (0 > istart)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.stdev - 'istart' index (" + istart + ") is less than 0.");
+
+        if (ardoubles.length < iend)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.stdev - 'iend' index (" + iend + ") is greater than array length.");
+
+        int numelemets = iend - istart;
+        double dmean = mean(ardoubles, istart, iend);
+        double dsum_squares = 0.0;
+        for (int ii=istart; ii<iend; ii++)
+            dsum_squares += ardoubles[ii]*ardoubles[ii];
+        
+        return Math.sqrt((dsum_squares - dmean*dmean * numelemets) / (numelemets - 1));
     }
     
     //-------------------------------------------------------------------------
@@ -272,15 +318,15 @@ public class SCStatistics {
      * @return double - quantile of Student's distribution
      */
     static double get99StudentQuantil(int inum) {
-        if (inum < 1)
+        if (inum < 1) 
             throw new IllegalArgumentException("Calling ScStatistics.get95StudentQuantil - number of elements leass than 1");
-
+        
         final double[] quantiles_1_30 = {
         63.66, 9.925, 5.841, 4.604, 4.032, 3.707, 3.499, 3.355, 3.250, 3.169,
         3.106, 3.055, 3.012, 2.977, 2.947, 2.921, 2.898, 2.878, 2.861, 2.845,
         2.831, 2.819, 2.807, 2.797, 2.787, 2.779, 2.771, 2.763, 2.756, 2.750
-        };
-
+        }; 
+        
         final double[] quantiles_32_50 = { // increment = 2
         2.739, 2.728, 2.720, 2.712, 2.705, 2.698, 2.692, 2.687, 2.682, 2.678
         };
@@ -288,23 +334,23 @@ public class SCStatistics {
         final double[] quantiles_55_70 = { // increment = 5
         2.668, 2.660, 2.654, 2.648
         };
-
+        
         final double[] quantiles_80_100 = { // increment = 10
         2.639, 2.632, 2.626
         };
-
+        
         final double quantil_120 = 2.617;
-
-        final double[] quantiles_150_300 = { // increment = 50
+        
+        final double[] quantiles_150_300 = { // increment = 50 
         2.609, 2.601, 2.596, 2.592
         };
-
+        
         final double[] quantiles_400_500 = { // increment = 100
-        2.588, 2.586
+        2.588, 2.586 
         };
-
+        
         final double quantil_infinity = 2.576;
-
+        
         if (inum < 30) return quantiles_1_30[inum-1];
         else if (inum < 32) return quantiles_1_30[29]; // 2.042
         else if (inum <= 50) return quantiles_32_50[(inum-32) / 2];
@@ -321,7 +367,7 @@ public class SCStatistics {
         else
             return quantil_infinity; // 1.96
     }
-
+    
     //-------------------------------------------------------------------------
     /**
      * Returns two sided quantile of Student's distribution with the 99.9% confidence interval
@@ -329,15 +375,15 @@ public class SCStatistics {
      * @return double - quantile of Student's distribution
      */
     static double get999StudentQuantil(int inum) {
-        if (inum < 1)
+        if (inum < 1) 
             throw new IllegalArgumentException("Calling ScStatistics.get95StudentQuantil - number of elements leass than 1");
-
+        
         final double[] quantiles_1_30 = {
-        636.6, 31.96, 12.92, 8.610, 6.869, 5.959, 5.408, 5.041, 4.718, 4.587,
+        636.6, 31.96, 12.92, 8.610, 6.869, 5.959, 5.408, 5.041, 4.718, 4.587,    
         4.437, 4.318, 4.221, 4.140, 4.073, 4.015, 3.965, 3.922, 3.883, 3.850,
         3.819, 3.792, 3.767, 3.745, 3.725, 3.707, 3.690, 3.674, 3.659, 3.646
-        };
-
+        }; 
+        
         final double[] quantiles_32_50 = { // increment = 2
         3.622, 3.601, 3.582, 3.566, 3.551, 3.538, 3.526, 3.515, 3.505, 3.496
         };
@@ -345,23 +391,23 @@ public class SCStatistics {
         final double[] quantiles_55_70 = { // increment = 5
         3.476, 3.460, 3.447, 3.435
         };
-
+        
         final double[] quantiles_80_100 = { // increment = 10
         3.416, 3.402, 3.390
         };
-
+        
         final double quantil_120 = 3.374;
-
-        final double[] quantiles_150_300 = { // increment = 50
+        
+        final double[] quantiles_150_300 = { // increment = 50 
         3.357, 3.340, 3.330, 3.323
         };
-
+        
         final double[] quantiles_400_500 = { // increment = 100
-        3.315, 3.310
+        3.315, 3.310 
         };
-
+        
         final double quantil_infinity = 3.291;
-
+        
         if (inum < 30) return quantiles_1_30[inum-1];
         else if (inum < 32) return quantiles_1_30[29]; // 2.042
         else if (inum <= 50) return quantiles_32_50[(inum-32) / 2];
@@ -378,7 +424,7 @@ public class SCStatistics {
         else
             return quantil_infinity; // 1.96
     }
-
+    
     //-------------------------------------------------------------------------
     /**
      * Equal mean values statistical test. Returns true if two mean values 
