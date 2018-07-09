@@ -104,24 +104,26 @@ public class Steady_course {
             ArrayList<Tote> totes = myreader.process("OtherOwnship_Trimmed.txt");
 
             // printing test (only first 10 totes)
-            print(totes, 0, 10);
+            // print(totes, 0, 10);
             
-            // printing the first 3 (roughly determined) steady-corse periods
+            // printing (roughly determined) steady-corse periods
             System.out.println();
-            ArrayList<SCPair> course_periods = steady_coarse_periods(totes, 10, 0.5);
-            for(int ii=0; ii<3; ii++) {
-                System.out.println("steady_coarse_period: index1=" + course_periods.get(ii).first.index + "  index2=" + course_periods.get(ii).second.index);
-                System.out.println("      in other words: time1=" + course_periods.get(ii).first.stime + "  time2=" + course_periods.get(ii).second.stime);
+            ArrayList<SCAlgorithms.SpanPair> course_intervals = SCAlgorithms.fifo_mean_st(SCStatistics.getHeadings(totes), 35);
+            System.out.println("There are " + course_intervals.size() + " steady course intervals.");
+            for(int ii=0; ii<course_intervals.size(); ii++) {
+                int index_start = course_intervals.get(ii).first;
+                int index_end = course_intervals.get(ii).second;
+                double[] headings = SCStatistics.getHeadings(totes, index_start, index_end); 
+                double dmean = SCStatistics.mean(headings);
+                double dmax = SCStatistics.max(headings);
+                double dmin = SCStatistics.min(headings);
+                double dstdev = SCStatistics.stdev(headings);
+                System.out.println("index: " + index_start + " - " + index_end + 
+                                   "  mean=" + String.format("%.2f", dmean) + 
+                                   "  stdev=" + String.format("%.2f", dstdev) +
+                                   "  max=" + String.format("%.2f", dmax) + 
+                                   "  min=" + String.format("%.2f", dmin)); 
             }
-            
-            // printing the first 3 (roughly determined) steady-speed periods
-            System.out.println();
-            ArrayList<SCPair> speed_periods = steady_speed_periods(totes, 10, 0.1);
-            for(int ii=0; ii<3; ii++) {
-                System.out.println("steady_coarse_period: index1=" + speed_periods.get(ii).first.index + "  index2=" + speed_periods.get(ii).second.index);
-                System.out.println("      in other words: time1=" + speed_periods.get(ii).first.stime + "  time2=" + speed_periods.get(ii).second.stime);
-            }
-        }
 
     	
     	catch(Exception e) {
