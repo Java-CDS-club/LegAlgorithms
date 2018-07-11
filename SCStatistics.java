@@ -122,6 +122,50 @@ public class SCStatistics {
 	
     //-------------------------------------------------------------------------
     /**
+     * Returns maximal value from a sub-array within an array of doubles
+     * @param  ardoubles given array
+     * @param  istart (inclusive) lower index of the sub-array
+     * @param  iend (exclusive) upper index of the sub-array
+     * @return double - max value within the array
+     */
+    public static double max(double[] ardoubles, int istart, int iend) {
+        if (0 > istart)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.max - 'istart' index (" + istart + ") is less than 0.");
+
+        if (ardoubles.length < iend)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.max - 'iend' index (" + iend + ") is greater than array length.");
+
+        double dmax = Double.MIN_VALUE;
+        for (int ii=istart; ii<iend; ii++)
+            dmax = Double.max(dmax, ardoubles[ii]);
+
+        return dmax;
+    }
+	
+    //-------------------------------------------------------------------------
+    /**
+     * Returns minimal value from a sub-array within an array of doubles
+     * @param  ardoubles given array
+     * @param  istart (inclusive) lower index of the sub-array
+     * @param  iend (exclusive) upper index of the sub-array
+     * @return double - min value within the array
+     */
+    public static double min(double[] ardoubles, int istart, int iend) {
+        if (0 > istart)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.min - 'istart' index (" + istart + ") is less than 0.");
+
+        if (ardoubles.length < iend)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.min - 'iend' index (" + iend + ") is greater than array length.");
+
+        double dmin = Double.MAX_VALUE;
+        for (int ii=istart; ii<iend; ii++)
+            dmin = Double.min(dmin, ardoubles[ii]);
+
+        return dmin;
+    }
+	
+    //-------------------------------------------------------------------------
+    /**
      * Returns mean from an array of normally distributed values
      * @param  ardoubles given array
      * @return double - mean value (calculated as simple arithmetic mean)
