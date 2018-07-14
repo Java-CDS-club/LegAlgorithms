@@ -8,6 +8,59 @@ import java.util.Iterator;
  */
 public class SCStatistics {
 	
+    public static class RegrResults {
+        int istart;
+        int iend;
+        
+        double taumax; // maximal normalized deviation
+        
+        double sigma0; // standard deviation
+        
+        // estimated parameters of linear model: Yi = a*Xi + b
+        double a;
+        double b;
+        
+        // ... and their estimated standard error (i.e reciprocal accuracy)
+        double ma;
+        double mb;
+    }
+	
+    //-------------------------------------------------------------------------
+    /**
+     * Creates a double array of time values from an ArrayList of totes
+     * @param  totes given ArrayList of Tote objects
+     * @return double[] - array of speeds extracted from totes
+     */
+    public static double[] getTimes(ArrayList<Tote> totes) {
+        return getTimes(totes, 0, totes.size());
+    }
+
+    //-------------------------------------------------------------------------
+    /**
+     * Creates a double array of absolute time values from an ArrayList of totes within the given indexes
+     * @param  totes given ArrayList of Tote objects
+     * @param  istart (inclusive) lower index of the totes-array segment extracted for calculation
+     * @param  iend (exclusive) upper index of the totes-array segment extracted for calculation
+     * @return double[] - array of absolute times extracted from totes
+     */
+    public static double[] getTimes(ArrayList<Tote> totes, int istart, int iend) {
+        if (0 > istart)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.getTimes - 'istart' index (" + istart + ") is less than 0.");
+
+        if (totes.size() < iend)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.getTimes - 'iend' index (" + iend + ") is greater than array length.");
+        
+        if (istart > iend)
+            throw new NegativeArraySizeException("Calling ScStatistics.getTimes - 'istart' (" + istart + ") is less than 'iend' (" + iend + ").");
+        
+        int index = 0;
+        double[] da = new double[iend - istart];
+        for (int ii=istart; ii<iend; ii++)
+            da[index++] = totes.get(ii).dabsolute_time;
+
+        return da;
+    }
+
     //-------------------------------------------------------------------------
     /**
      * Creates a double array of speed values from an ArrayList of totes
@@ -494,4 +547,160 @@ public class SCStatistics {
         
         return dtest_value <= quantil95;
     }
+    
+    //-------------------------------------------------------------------------
+    /**
+     * Returns the set of resulting parameters to analyze linear regression
+     * @param  x given domain array
+     * @param  y given value array
+     * @param  istart (inclusive) lower index of the sub-array
+     * @param  iend (exclusive) upper index of the sub-array
+     * @return double - max value within the array
+     */
+    public static RegrResults lregression(double[] x, double[] y, int istart, int iend) {
+        if (0 > istart)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.lregression - 'istart' index (" + istart + ") is less than 0.");
+
+        if (x.length < iend)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.lregression - 'iend' index (" + iend + ") is greater than array length.");
+
+        if (x.length != y.length)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.lregression - input arrays of different size.");
+
+        RegrResults result = new RegrResults();
+        
+        result.istart = istart;
+        result.iend = iend;
+        
+        // find out the estimated values of basic linear regression parameters (a, b)
+        int num = iend - istart;	// number of elements in the arrays
+        double N11 = 0.0;			// sum(x*x)
+        double N12 = 0.0;                       // sum(x)
+        double N22 = num;                       // 
+        
+        double n1 = 0.0;                        // -sum(x*y)
+        double n2 = 0.0;                        // -sum(y)
+        
+        for(int ii=istart; ii<iend; ii++) {
+        	N11 += x[ii] * x[ii];
+        	N12 += x[ii];
+        	n1 -= x[ii] * y[ii];
+        	n2 -= y[ii];
+        }
+        
+        double det = N11 * N22 - N12*N12;
+        
+        double Qx11 =  N22 / det;
+        double Qx12 = -N12 / det;
+        double Qx22 =  N11 / det;
+        		
+        result.a = -(Qx11*n1 + Qx12*n2);        // -( sumxy * num   + sumx  * sumy ) / det;
+        result.b = -(Qx12*n1 + Qx22*n2);        // -( sumx  * sumxy - sumxx * sumy ) / det;
+        
+        // accuracy, standard deviations, allowed errors...
+        double sumvv = 0.0;
+        double vmax = Double.MIN_VALUE; // redundant; just for tests
+        for(int jj=istart; jj<iend; jj++) {
+        	double yest = x[jj]*result.a + result.b;	// estimated (expected) value
+        	double v = y[jj] - yest;					// residuals - measured value minus expected value
+        	vmax = Double.max(vmax, Math.abs(v));
+        	sumvv += v*v;
+        	//System.out.println("v[" + jj + "] = " + v);
+        }
+        
+        result.sigma0 = Math.sqrt(sumvv / (num - 2));
+        
+        result.ma = result.sigma0 * Math.sqrt(Qx11);
+        result.mb = result.sigma0 * Math.sqrt(Qx22);
+        
+        
+        result.taumax = Double.MIN_VALUE;
+        for(int ii=istart; ii<iend; ii++) {
+        	double v = y[ii] - (x[ii]*result.a + result.b);
+        	double Qv = 1. - (Qx11*x[ii]*x[ii] + 2*Qx12*x[ii] + Qx22);
+        	double tau = Math.abs(v) / (result.sigma0 * Math.sqrt(Qv));
+        	result.taumax = Double.max(result.taumax, tau);
+        }
+        
+        return result;
+    }
 }	
+
+/*
+ * Linear regression in matrix notation (method of least squares):
+ * 
+ * Mathematical model: Y = a*X + b
+ * Stochastical model: The accuracy of all measured Y is the same. Normal distribution.
+ * 
+ * 
+ * Matrix of coefficients (Jacobian - Ai1 = ∂Yi/∂a, Ai2 = ∂Yi/∂b) and vector of residuals:
+ *
+ *     | X1    1  |        | -Y1   |
+ *     | X2    1  |        | -Y2   |
+ * A = | ..    .. |    f = |  ...  |
+ *     | ..    .. |        |  ...  |
+ *     | Xnum  1  |        | -Ynum |
+ * 
+ *
+ * Matrix of normal equations:
+ * 
+ *                  | sumxx  sumx |
+ * N = trans(A)*A = |             |
+ *                  | sumx   num  |
+ *
+ *                                    
+ * detN = num*sumxx - sumx*sumx
+ * 
+ *
+ *          |  num   -sumx  |
+ * inv(N) = |               | / detN
+ *          | -sumx   sumxx |
+ * 
+ *
+ *
+ * Vector of cofactors:
+ * 
+ *                  | -sumxy |
+ * n = trans(A)*f = |        |
+ *                  | -sumy  |
+ *
+ *
+ *
+ * The estimation of the linear regression parameters:
+ * 
+ *     | a |               | sumxy*num  - sumx*sumy  |
+ * x = |   | = -inv(N)*n = |                         | / detN
+ *     | b |               | sumxx*sumy - sumx*sumxy |
+ *
+ *
+ *
+ * The covariance matrix:
+ * 
+ *               |  num  -sumx  |
+ * Qx = inv(N) = |              | / detN
+ *               | -sumx  sumxx |
+ *
+ *
+ * Standard deviation of estimated parameters:
+ * 
+ * ma = sigma0 * sqrt(Qx[11])
+ * mb = sigma0 * sqrt(Qx[22])
+ *
+ *
+ * Corrections:
+ * 
+ * v = A*x + f
+ * 
+ * The covariance matrix of corrections:
+ * 
+ * Qv = E - A*Qx*trans(A)
+ * 
+ * Diagonal members of Qv:
+ * 
+ * Qv[ii] = 1 - ( x[i]^2 * Qx[11]  +  2*x[i]*Qx[12] + Qx[22] )
+ * 
+ * mv[i] = sigma0 * sqrt(Qv[ii])
+ * 
+ * tau[i] = v[i] / mv[i]  (should be less then corresponding quantile)
+ * 
+ */
