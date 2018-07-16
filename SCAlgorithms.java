@@ -184,4 +184,71 @@ public class SCAlgorithms {
 
         return periods;
     }
+    
+    /**
+     * Merge intervals which can be considered same (the same mean, in statistical sense)
+     * @param  values the array of values
+     * @param  periods_in the array of steady course/speed intervals
+     * todo it should be optimized. It can run significantly faster.
+     */
+    public static ArrayList<SpanPair> merge_intervals(double[] values, ArrayList<SpanPair> periods_in) {
+        // todo: throw here...
+        ArrayList<SpanPair> periods_out = new ArrayList<>();
+        
+        SpanPair in = periods_in.get(0);
+        SpanPair out = new SpanPair(in.first, in.second);
+        int num1 = out.second - out.first;
+        
+        for(int jj=1; jj<periods_in.size(); jj++) {
+            SpanPair merging = periods_in.get(jj);
+            double mean1 = SCStatistics.mean(values, out.first, out.second);
+            double stdev1 = SCStatistics.stdev(values, out.first, out.second);
+            
+            int num2 = merging.second - merging.first;
+            double mean2 = SCStatistics.mean(values, merging.first, merging.second);
+            double stdev2 = SCStatistics.stdev(values, merging.first, merging.second);
+            
+            // todo: Fischer's test of dispersion equality
+            
+            // aggregate standard deviation 
+            double stedev_agrregate = Math.sqrt((stdev1*stdev1*(num1-1) + stdev2*stdev2*(num2-2)) / (num1 + num2 - 2));
+            // standard deviation of the difference of two mean values
+            double stedev_diff = stedev_agrregate * Math.sqrt(1./num1 + 1./num2);
+            
+            double dquantile_diff = SCStatistics.get99StudentQuantil(num1 + num2 - 2);
+                
+            boolean cond = (Math.abs(mean1 - mean2) / stedev_diff) <= dquantile_diff;
+            
+            if(cond) { // merge intervals
+                int numelements = num1 + num2;
+                double dquantile = SCStatistics.get99StudentQuantil(numelements - 2);
+                
+                for(int kk=out.first; kk<merging.second; kk++) {
+                    double dval = values[kk];
+                    double ddeviation = Math.abs(dval - mean2);
+                    double dtest = ddeviation / stedev_agrregate * Math.sqrt(numelements / (numelements-1));
+                    if(dtest > dquantile) {
+                        cond = false;
+                        break;
+                    }
+                }
+                
+                if(cond) {
+                    out.second = merging.second;
+                    if(periods_in.size()-1 == jj)
+                        periods_out.add(out);
+                    
+                    continue;
+                }
+            }
+            
+            periods_out.add(out);
+            out = new SpanPair(merging.first, merging.second);
+            if(periods_in.size()-1 == jj)
+                periods_out.add(out);
+            
+        }
+        
+        return periods_out;
+    }
 }
