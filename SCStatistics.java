@@ -63,6 +63,43 @@ public class SCStatistics {
 
     //-------------------------------------------------------------------------
     /**
+     * Creates a double array of relative time values from an ArrayList of totes within the given indexes. The values are relative to the first time in list i.e the elapsed times from totes[istart] are recorded.
+     * @param  totes given ArrayList of Tote objects
+     * @return double[] - array of speeds extracted from totes
+     */
+    public static double[] getRelativeTimes(ArrayList<Tote> totes) {
+        return getRelativeTimes(totes, 0, totes.size());
+    }
+
+    //-------------------------------------------------------------------------
+    /**
+     * Creates a double array of relative time values from an ArrayList of totes within the given indexes. The values are relative to the first time in list i.e the elapsed times from totes[istart] are recorded.
+     * @param  totes given ArrayList of Tote objects
+     * @param  istart (inclusive) lower index of the totes-array segment extracted for calculation
+     * @param  iend (exclusive) upper index of the totes-array segment extracted for calculation
+     * @return double[] - array of absolute times extracted from totes
+     */
+    public static double[] getRelativeTimes(ArrayList<Tote> totes, int istart, int iend) {
+        if (0 > istart)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.getRelativeTimes - 'istart' index (" + istart + ") is less than 0.");
+
+        if (totes.size() < iend)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.getRelativeTimes - 'iend' index (" + iend + ") is greater than array length.");
+        
+        if (istart > iend)
+            throw new NegativeArraySizeException("Calling ScStatistics.getRelativeTimes - 'istart' (" + istart + ") is less than 'iend' (" + iend + ").");
+        
+        int index = 0;
+        double dreduce = totes.get(istart).dabsolute_time;
+        double[] da = new double[iend - istart];
+        for (int ii=istart; ii<iend; ii++)
+            da[index++] = totes.get(ii).dabsolute_time - dreduce;
+
+        return da;
+    }
+
+    //-------------------------------------------------------------------------
+    /**
      * Creates a double array of speed values from an ArrayList of totes
      * @param  totes given ArrayList of Tote objects
      * @return double[] - array of speeds extracted form totes
