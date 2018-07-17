@@ -561,7 +561,7 @@ public class SCStatistics {
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.lregression - 'istart' index (" + istart + ") is less than 0.");
 
-        if (x.length < iend)
+        if (x.length < iend - istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.lregression - 'iend' index (" + iend + ") is greater than array length.");
 
         if (x.length != y.length)
@@ -582,13 +582,15 @@ public class SCStatistics {
         double n2 = 0.0;                        // -sum(y)
         
         for(int ii=istart; ii<iend; ii++) {
-        	N11 += x[ii] * x[ii];
-        	N12 += x[ii];
-        	n1 -= x[ii] * y[ii];
-        	n2 -= y[ii];
+            N11 += x[ii] * x[ii];
+            N12 += x[ii];
+            n1 -= x[ii] * y[ii];
+            n2 -= y[ii];
         }
         
-        double det = N11 * N22 - N12*N12;
+        double det = N11 * N22 - N12*N12; 
+        if (det < 0) // N is positive definite matrix and 'det' should be always positive
+            throw new IllegalStateException("Calling ScStatistics.lregression - negative determinant of positive definite matrix. It should not be possible.");
         
         double Qx11 =  N22 / det;
         double Qx12 = -N12 / det;
@@ -605,7 +607,6 @@ public class SCStatistics {
         	double v = y[jj] - yest;					// residuals - measured value minus expected value
         	vmax = Double.max(vmax, Math.abs(v));
         	sumvv += v*v;
-        	//System.out.println("v[" + jj + "] = " + v);
         }
         
         result.sigma0 = Math.sqrt(sumvv / (num - 2));
@@ -615,22 +616,22 @@ public class SCStatistics {
         
         
         result.taumax = Double.MIN_VALUE;
-        for(int ii=istart; ii<iend; ii++) {
+        for(int ii=0; ii<num; ii++) {
         	double v = y[ii] - (x[ii]*result.a + result.b);
         	double Qv = 1. - (Qx11*x[ii]*x[ii] + 2*Qx12*x[ii] + Qx22);
         	double tau = Math.abs(v) / (result.sigma0 * Math.sqrt(Qv));
         	result.taumax = Double.max(result.taumax, tau);
         }
-        
+
         return result;
     }
-}	
+}
 
 /*
  * Linear regression in matrix notation (method of least squares):
  * 
  * Mathematical model: Y = a*X + b
- * Stochastical model: The accuracy of all measured Y is the same. Normal distribution.
+ * Stochastical model: The accuracy of all measured Y is the same
  * 
  * 
  * Matrix of coefficients (Jacobian - Ai1 = ∂Yi/∂a, Ai2 = ∂Yi/∂b) and vector of residuals:
@@ -668,9 +669,9 @@ public class SCStatistics {
  *
  * The estimation of the linear regression parameters:
  * 
- *     | a |               | sumxy*num  - sumx*sumy  |
- * x = |   | = -inv(N)*n = |                         | / detN
- *     | b |               | sumxx*sumy - sumx*sumxy |
+ *      | a |               | sumxy*num  - sumx*sumy  |
+ * x' = |   | = -inv(N)*n = |                         | / detN
+ *      | b |               | sumxx*sumy - sumx*sumxy |
  *
  *
  *
@@ -689,7 +690,7 @@ public class SCStatistics {
  *
  * Corrections:
  * 
- * v = A*x + f
+ * v = A*x' + f
  * 
  * The covariance matrix of corrections:
  * 
@@ -697,10 +698,11 @@ public class SCStatistics {
  * 
  * Diagonal members of Qv:
  * 
- * Qv[ii] = 1 - ( x[i]^2 * Qx[11]  +  2*x[i]*Qx[12] + Qx[22] )
+ * Qv[ii] = 1 - ( X[i]^2 * Qx[11]  +  2*X[i]*Qx[12] + Qx[22] )
  * 
  * mv[i] = sigma0 * sqrt(Qv[ii])
  * 
  * tau[i] = v[i] / mv[i]  (should be less then corresponding quantile)
  * 
  */
+
