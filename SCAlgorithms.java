@@ -199,6 +199,7 @@ public class SCAlgorithms {
         SpanPair out = new SpanPair(in.first, in.second);
         int num1 = out.second - out.first;
         
+        
         for(int jj=1; jj<periods_in.size(); jj++) {
             SpanPair merging = periods_in.get(jj);
             double mean1 = SCStatistics.mean(values, out.first, out.second);
@@ -210,24 +211,26 @@ public class SCAlgorithms {
             
             // todo: Fischer's test of dispersion equality
             
-            // aggregate standard deviation 
-            double stedev_agrregate = Math.sqrt((stdev1*stdev1*(num1-1) + stdev2*stdev2*(num2-2)) / (num1 + num2 - 2));
+            // big-interval standard deviation
+            double stdev_big = SCStatistics.stdev(values, out.first, merging.second);
+
             // standard deviation of the difference of two mean values
-            double stedev_diff = stedev_agrregate * Math.sqrt(1./num1 + 1./num2);
+            double stedev_diff = Math.sqrt(stdev1*stdev1/num1 + stdev2*stdev2/num2);
             
             double dquantile_diff = SCStatistics.get99StudentQuantil(num1 + num2 - 2);
                 
-            boolean cond = (Math.abs(mean1 - mean2) / stedev_diff) <= dquantile_diff;
+            boolean cond = Math.abs(mean1 - mean2) / stedev_diff <= dquantile_diff;
             
             if(cond) { // merge intervals
-                int numelements = num1 + num2;
+                int numelements = merging.second - out.first;
                 double dquantile = SCStatistics.get99StudentQuantil(numelements - 2);
                 
+                int numdev = 0; // number of corrections beyond limits (d/md > quantile)
                 for(int kk=out.first; kk<merging.second; kk++) {
                     double dval = values[kk];
                     double ddeviation = Math.abs(dval - mean2);
-                    double dtest = ddeviation / stedev_agrregate * Math.sqrt(numelements / (numelements-1));
-                    if(dtest > dquantile) {
+                    double dtest = ddeviation / stdev_big * Math.sqrt(numelements / (numelements-1));
+                    if((dtest > dquantile) && (++numdev > 1 + numelements/100)) {
                         cond = false;
                         break;
                     }
@@ -235,7 +238,7 @@ public class SCAlgorithms {
                 
                 if(cond) {
                     out.second = merging.second;
-                    if(periods_in.size()-1 == jj)
+                    if(periods_in.size()-1 == jj) // last steady interval in the input arraylist
                         periods_out.add(out);
                     
                     continue;
@@ -244,9 +247,8 @@ public class SCAlgorithms {
             
             periods_out.add(out);
             out = new SpanPair(merging.first, merging.second);
-            if(periods_in.size()-1 == jj)
+            if(periods_in.size()-1 == jj) // last steady interval in the input arraylist
                 periods_out.add(out);
-            
         }
         
         return periods_out;
