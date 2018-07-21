@@ -106,26 +106,62 @@ public class Steady_course {
             // printing test (only first 10 totes)
             // print(totes, 0, 10);
             
-            // printing (roughly determined) steady-corse periods
+            // printing (roughly determined) steady-speed periods
             System.out.println();
-            ArrayList<SCAlgorithms.SpanPair> course_intervals = SCAlgorithms.fifo_mean_st(SCStatistics.getHeadings(totes), 35);
-            System.out.println("There are " + course_intervals.size() + " steady course intervals.");
-            for(int ii=0; ii<course_intervals.size(); ii++) {
-                int index_start = course_intervals.get(ii).first;
-                int index_end = course_intervals.get(ii).second;
-                double[] headings = SCStatistics.getHeadings(totes, index_start, index_end); 
-                double dmean = SCStatistics.mean(headings);
-                double dmax = SCStatistics.max(headings);
-                double dmin = SCStatistics.min(headings);
-                double dstdev = SCStatistics.stdev(headings);
-                System.out.println("index: " + index_start + " - " + index_end + 
-                                   "  mean=" + String.format("%.2f", dmean) + 
-                                   "  stdev=" + String.format("%.2f", dstdev) +
-                                   "  max=" + String.format("%.2f", dmax) + 
-                                   "  min=" + String.format("%.2f", dmin)); 
-            }
+            double[] times = SCStatistics.getRelativeTimes(totes);
+            double[] values = SCStatistics.getSpeeds(totes);
+            ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = SCAlgorithms.fifo_mean_st_maxdev(times, values, 35, true);
+            ArrayList<SCAlgorithms.SpanPair> speed_intervals = SCAlgorithms.merge_intervals(values, speed_intervals0);
+            System.out.println("There are " + speed_intervals.size() + " steady speed intervals.");
+            for(int ii=0; ii<speed_intervals.size(); ii++) {
+                int index_start = speed_intervals.get(ii).first;
+                int index_end = speed_intervals.get(ii).second;
+                int numelements = index_end - index_start;
+                double[] speeds = SCStatistics.getSpeeds(totes, index_start, index_end); 
+                double dstartval = speeds[0];
+                double dendval = speeds[index_end - index_start - 1];
+                double dmean = SCStatistics.mean(speeds);
+                double dmax = SCStatistics.max(speeds);
+                double dmin = SCStatistics.min(speeds);
+                double dstdev = SCStatistics.stdev(speeds);
+                double dmaxdev = Math.max(dmax - dmean, dmean - dmin);
+                double dtau = dmaxdev / dstdev * Math.sqrt(numelements / (numelements-1));
+                double dquantile = SCStatistics.get99StudentQuantil(numelements - 2);
 
-    	
+                double[] timesreg = SCStatistics.getRelativeTimes(totes, index_start, index_end);
+                double[] speedsreg = SCStatistics.getSpeeds(totes, index_start, index_end);
+                SCStatistics.RegrResults res = SCStatistics.lregression(timesreg, speedsreg, 0, numelements);
+                double dtest3 = Math.abs(res.a / res.ma);
+                double dquantile3 = SCStatistics.get999StudentQuantil(index_end - index_start - 2);
+                //double grow = Math.abs(res.a * (timesreg[timesreg.length - 1] - timesreg[0]));
+                double delapsedtime = timesreg[timesreg.length - 1] - timesreg[0];
+                double grow = Math.abs(res.a * delapsedtime);
+
+                if (true /*|| dtest3 <= dquantile3*/) {
+                    String spath = "speed_" + index_start + "_" + index_end + ".txt";
+                    SCFileReader.writeSpeeds2File(totes, index_start, index_end, spath, true, true);
+
+                    System.out.println("index: " + index_start + " - " + index_end + 
+                                       "  (" + (index_end-index_start) + ")" +
+                                       "  mean=" + String.format("%.2f", dmean) + 
+                                       "  stdev=" + String.format("%.3f", dstdev) +
+                                       "  maxdev=" + String.format("%.2f", dmaxdev) +
+                                       "  tau=" + String.format("%.2f", dtau) +
+                                       "  quantile=" + String.format("%.2f", dquantile) +
+                                       "  max=" + String.format("%.2f", dmax) + 
+                                       "  min=" + String.format("%.2f", dmin) +
+                                       "  start_val=" + String.format("%.2f", dstartval) + 
+                                       "  end_val=" + String.format("%.2f", dendval) + 
+                                       "    regression: a=" + String.format("%.8f", res.a) + 
+                                       "  ma=" + String.format("%.8f", res.ma) + 
+                                       "  test=" + String.format("%.3f", dtest3) + 
+                                       "  quantil=" + String.format("%.3f", dquantile3) + 
+                                       "  grow=" + String.format("%.3f", grow) + 
+                                       (grow > Double.max(0.1, dstdev) && dtest3 > dquantile3 ? " ATTENTION!!" : ""));
+                }
+            }
+    	}
+
     	catch(Exception e) {
             System.out.println(e);
     	}
