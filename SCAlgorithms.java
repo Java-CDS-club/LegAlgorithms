@@ -324,4 +324,44 @@ public class SCAlgorithms {
         
         return periods_out;
     }
+    
+    //-------------------------------------------------------------------------
+    /**
+     * Intersects two lists of intervals (e.g. steady course and steady speed intervals).
+     * @param  first the first list of intervals (the list has to be ordered)
+     * @param  second the second list of intervals (the list has to be ordered)
+     * @return rrayList<SpanPair> - Returns new list of a combined/intersected intervals.
+     */
+    public static ArrayList<SpanPair> intersectLists(ArrayList<SpanPair> first, ArrayList<SpanPair> second) {
+        ArrayList<SpanPair> intersection = new ArrayList<>();
+
+        // examine and treat properly all the topological possibilities
+
+        int index_second = 0; // index of a SpanPair element from the second list
+        Iterator<SpanPair> iter = first.iterator();
+        while (iter.hasNext()) { // iterate through the first list
+            SpanPair pair1 = iter.next();
+            for(int ii=index_second; ii<second.size(); ii++) { // iterate through the second list, starting at index_second
+                SpanPair pair2 = second.get(ii);
+                if(pair1.first >= pair2.first && pair1.first < pair2.second) { // the beginning of pair1 falls between pair2 interval
+                    intersection.add( new SpanPair(pair1.first, Integer.min(pair1.second, pair2.second)) );
+                    index_second = pair1.second < pair2.second ? ii : ii+1;
+                    if(pair1.second <= pair2.second)
+                    break;
+                }
+                else if(pair1.second > pair2.first && pair1.second <= pair2.second) {// the end of pair1 falls between pair2 interval
+                    intersection.add( new SpanPair(Integer.max(pair1.first, pair2.first), pair1.second) );
+                    index_second = ii;
+                    break;
+                }
+                else if(pair1.first <= pair2.first && pair1.second >= pair2.second) // if pair1 envelopes pair2
+                    intersection.add( new SpanPair(pair2.first, pair2.second) );
+                else if(pair1.second <= pair2.first) // pair1 and pair2 are disjunct intervals (the first pair precedes the seconds)
+                    break;
+               // pair1 and pair2 are disjunct intervals (the second pair precedes the first) - nothing to be done
+            }
+        }
+
+        return intersection;
+    }
 }
