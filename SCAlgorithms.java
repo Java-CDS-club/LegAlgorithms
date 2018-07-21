@@ -142,6 +142,67 @@ public class SCAlgorithms {
 
     //-------------------------------------------------------------------------
     /**
+     * Returns true if we all the deviations from mean value are within the statistically allowed limits 
+     * (hypothesis |x(i)-x'| > 0 is tested; alternative hypothesis is |x(i)-x'| = 0
+     * test value (x(i)-x')/sigma(x)*sqrt(n-1)/sqrt(n) has Student(0,1) distribution with n-1 degrees of freedom)
+     * @param  times the array of times
+     * @param  values the array of values
+     * @param  istart (inclusive) lower index of the sub-array
+     * @param  iend (exclusive) upper index of the sub-array
+     * @param  steady_range the regression line will be considered horizontal if its grow is less then this predefined argument
+     * @return boolean - true if we can consider regression line horizontal
+     */
+    static boolean areDeviationsInAllowedLimits(double[] values, int istart, int iend) {
+        final double dstdev = SCStatistics.stdev(values, istart, iend);
+        if (dstdev < SPEED_STEADY_STDEV) // Preventing devzero errors
+            return true;
+        
+        final double dmax = SCStatistics.max(values, istart, iend);
+        final double dmin = SCStatistics.min(values, istart, iend);
+        final int numelements = iend - istart;
+        final double dmean = SCStatistics.mean(values, istart, iend);
+        final double ddeviation = Double.max(dmax - dmean, dmean - dmin);
+        final double dtest = ddeviation / dstdev * Math.sqrt(numelements / (numelements-1));
+        final double dquantile = numelements > 2 ? SCStatistics.get99StudentQuantil(numelements - 2) : SCStatistics.get99StudentQuantil(numelements - 1);
+        
+        return dtest <= dquantile;
+    }
+    
+    //-------------------------------------------------------------------------
+    /**
+     * Returns true if we can consider regression line horizontal 
+     * (regression analysis: hypothesis |a| > 0 is tested; alternative hypothesis is a = 0
+     * test value (a-0)/sigma(a) has Student(0,1) distribution with n-2 degrees of freedom)
+     * @param  times the array of times
+     * @param  values the array of values
+     * @param  istart (inclusive) lower index of the sub-array
+     * @param  iend (exclusive) upper index of the sub-array
+     * @param  steady_range the regression line will be considered horizontal if it cannot grow more than this predefined argument
+     * @return boolean - true if we can consider regression line horizontal
+     */
+    static boolean isRegressionLineHorizontal(double[] times, double[] values, int istart, int iend, double steady_range) {
+        SCStatistics.RegrResults res = SCStatistics.lregression(times, values, istart, iend);
+        final int numelements = iend - istart;
+        final double dstdev = SCStatistics.stdev(values, istart, iend);
+        final double regression_grow = Math.abs(res.a * (times[iend-1] - times[istart]));
+        boolean cond1 = regression_grow <= Double.max(steady_range, dstdev);
+        
+        // if regression line cannot increase significntly we can consider the line horizontal 
+        if (cond1) return true;
+        
+        // ... otherwise we have to compare test statistics
+        boolean cond2 = true;
+        if(res.ma > 1.e-8) { // Preventing devzero errors
+            final double dtest = Math.abs(res.a / res.ma);
+            final double dquantile = numelements > 2 ? SCStatistics.get999StudentQuantil(numelements - 2) : SCStatistics.get999StudentQuantil(1) ;
+            cond2 = dtest <= dquantile;
+        }
+        
+        return cond2;
+    }
+    
+    //-------------------------------------------------------------------------
+    /**
      * Creates an array of steady value (course or speed) intervals from an 
      * array of input values. Based on statistics and calculated limits 
      * for deviation from the mean value. The maximal deviation is compared to the test statistics..
