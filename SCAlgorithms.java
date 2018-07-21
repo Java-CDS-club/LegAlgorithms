@@ -2,6 +2,14 @@ import java.util.ArrayList;
 
 public class SCAlgorithms {
     
+	// if all the values in interval do not differ more, we can consider it the steady course/speed interval
+	static double COURSE_STEADY_RANGE = 0.5;
+	static double SPEED_STEADY_RANGE = 0.1;
+    
+	// if standard deviation is not greater, we can consider it the steady course/speed interval
+	static double COURSE_STEADY_STDEV = 0.05;
+	static double SPEED_STEADY_STDEV = 0.01;
+    
     // internal utility data structures
     public static class SpanPair{
         public SpanPair (int _first, int _second) {
@@ -136,50 +144,52 @@ public class SCAlgorithms {
     /**
      * Creates an array of steady value (course or speed) intervals from an 
      * array of input values. Based on statistics and calculated limits 
-     * for deviation from the mean value. The maximal deviation is compared.
-     * @param  input_array the array of input values
+     * for deviation from the mean value. The maximal deviation is compared to the test statistics..
+     * @param  times the array of times
+     * @param  values the array of values
      * @param minelements the minimal number of elements in the 'steady' interval
-     * @return double[] - array of speeds extracted form totes
+     * @return ArrayList< SpanPair > - array of steady intervals extracted form totes
      * todo it should be optimized. It can run significantly faster.
      */
-    public static ArrayList<SpanPair> fifo_mean_st_maxdev(double[] input_array, int minelements) {
-        
+    public static ArrayList<SpanPair> fifo_mean_st_maxdev(double[] times, double[] values, int minelements, boolean bRegressionAnalysis) {
+        if (times.length != values.length)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_mean_st_maxdev - input arrays of different length");
+
         ArrayList<SpanPair> periods = new ArrayList<>();
         
-        int istart=0, iend=1;
-        while ((istart <= input_array.length - minelements) && (iend < input_array.length)) {
-            boolean bcondition = false;
-            if (++iend < input_array.length) {
-                int numelements = iend - istart;
-                final double dmax = SCStatistics.max(input_array, istart, iend);
-                final double dmin = SCStatistics.min(input_array, istart, iend);
-                if (dmax - dmin < 0.01)
-                    bcondition = true;
-                else { // The 2nd test statistic is compared to the quantile of Student's S(0,1) distribution with inumelements-2 degrees of freedom
-                    final double dstdev = SCStatistics.stdev(input_array, istart, iend);
-                    if (dstdev < 0.01) // Preventing devzerro errors
-                        bcondition = true;
-                    else {
-                        final double dmean = SCStatistics.mean(input_array, istart, iend);
-                        final double ddeviation = Math.max(dmax - dmean, dmean - dmin);
-                        final double drange = Math.abs(input_array[iend-1] - input_array[istart]);
-                        final double dtest1 = drange * Math.sqrt(2.0) / dstdev;
-                        final double dtest2 = ddeviation / dstdev;
-                        final double dquantile1 = SCStatistics.get99StudentQuantil(numelements - 1);
-                        final double dquantile2 = numelements > 2 ? SCStatistics.get999StudentQuantil(numelements - 2) : dquantile1;
-                        bcondition = dtest1 <= dquantile1 && dtest2 <= dquantile2;
-                    }
-                }
+        int istart=0;
+        int iend = istart + minelements;
+                        
+        while ((istart <= values.length - minelements) && (iend <= values.length)) {
+            boolean bcondition;
+            final double dmax = SCStatistics.max(values, istart, iend);
+            final double dmin = SCStatistics.min(values, istart, iend);
+            final double dstdev = SCStatistics.stdev(values, istart, iend);
+            
+            // if all the values are in the predefined small range or 
+            // if they deviate within the numbers precision (2 decimals, here)
+            // we can drop out calculations and consider it to be steady course/speed interval
+            if (SPEED_STEADY_RANGE >= (dmax - dmin) || SPEED_STEADY_STDEV >= dstdev) 
+                bcondition = true;
+            else {
+                bcondition = areDeviationsInAllowedLimits(values, istart, iend);
+                if(bcondition && bRegressionAnalysis)
+                    bcondition &= isRegressionLineHorizontal(times, values, istart, iend, SPEED_STEADY_RANGE);
             }
 
-            if(false == bcondition) {
-                if (iend - istart > minelements) {
-                    periods.add(new SpanPair(istart, iend));
+            if(!bcondition || values.length == iend) {
+                if (iend - istart != minelements) { // i.e. iend - istart > minelements
+                    SpanPair sp = new SpanPair(istart, (iend != values.length ? --iend : iend));
+                    periods.add(sp);
+                    
                     istart = iend;
-                    iend = istart + 1;
+                    iend += minelements;
                 }
-                else iend = ++istart + 1;
+                else
+                    iend = ++istart + minelements;
             }
+            else
+                iend++;
         }
 
         return periods;
