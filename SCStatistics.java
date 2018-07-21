@@ -596,8 +596,8 @@ public class SCStatistics {
      * @todo There are more precise and bigger tables. Implement one of them.
      */
     public static double get99FQuantile(int f1, int f2) {
-        if (f1 < 1 || f2 < 1)
-            throw new IllegalArgumentException("Calling ScStatistics.get99FQuantile - degrees of freedoms less than 1");
+        if (f1 < 1 || f2 < 1) 
+            throw new IllegalArgumentException("Calling ScStatistics.get99F_DistributionQuantil - degrees of freedoms less than 1");
 
         double[][] F99table = {
 //         f1 = 1          2          3          4          5          6          7          8          9         10          12        15         20         24         30         40         60       120           ∞
@@ -643,355 +643,44 @@ public class SCStatistics {
 /*  Inf.*/ {   6.635,     4.605,     3.782,     3.319,     3.017,     2.802,     2.639,     2.511,     2.407,     2.321,     2.185,     2.039,     1.878,     1.791,     1.696,     1.592,     1.473,     1.325,     1.000 }
         };
 
-        // taking values form table OR applying linear OR applying bilinear interpolation
+        // taking from the table directly
+        if(f2 <= 30 && f1 <= 10) return F99table[f2-1][f1-1];
 
-        if(f1 <= 10) {
-            if(f2 <= 30) return F99table[f2-1][f1-1]; // taking from the table directly
-            else if(f2 <= 40) {
-                double z1 = F99table[29][f1-1]; // f2=30
-                double z2 = F99table[30][f1-1]; // f2=40
-                return linterpolation(z1, z2, f2-30, 40-f2);
-            }
-            else if(f2 <= 60) {
-                double z1 = F99table[30][f1-1]; // f2=40
-                double z2 = F99table[31][f1-1]; // f2=60
-                return linterpolation(z1, z2, f2-40, 60-f2);
-            }
-            else if(f2 <= 120) {
-                double z1 = F99table[31][f1-1]; // f2=60
-                double z2 = F99table[32][f1-1]; // f2=120
-                return linterpolation(z1, z2, f2-60, 120-f2);
-            }
-            else {
-                double z1 = F99table[32][f1-1]; // f2=120
-                double z2 = F99table[33][f1-1]; // f2 = ∞
-                return linterpolation(z1, z2, f2-120, Integer.MAX_VALUE-f2);
-            }
+        // linear interpolation (of the table values)
+        else if(f2 <= 30) {
+            int f1index = f1 <= 12 ? 10 : f1 <= 15 ? 11 : f1 <= 20 ? 12 : f1 <= 24 ? 13 : f1 <= 30 ? 14 : f1 <= 40 ? 15 : f1 <= 60 ? 16 : f1 <= 120 ? 17 : 18;
+            double dx1 = f1 <= 12 ? (f1-10) : f1 <= 15 ? (f1-12) : f1 <= 20 ? (f1-15) : f1 <= 24 ? (f1-20) : f1 <= 30 ? (f1-24) : f1 <= 40 ? (f1-30) : f1 <= 60 ? (f1-40) : f1 <= 120 ? (f1-60) : (f1-120);
+            double dx2 = f1 <= 12 ? (12-f1) : f1 <= 15 ? (15-f1) : f1 <= 20 ? (20-f1) : f1 <= 24 ? (24-f1) : f1 <= 30 ? (30-f1) : f1 <= 40 ? (40-f1) : f1 <= 60 ? (60-f1) : f1 <= 120 ? (120-f1) : (Integer.MAX_VALUE-f1);
+            double z1 = F99table[f2-1][f1index-1];
+            double z2 = F99table[f2-1][f1index];
+            return linterpolation(z1, z2, dx1, dx2);
         }
 
-        else if(f1 <= 12) {
-            if(f2 <= 30) {
-                double z1 = F99table[f2-1][9];  // f1=10
-                double z2 = F99table[f2-1][10]; // f1=12
-                return linterpolation(z1, z2, f1-10, 12-f1);
-            }
-            else if(f2 <= 40) {
-                double z11 = F99table[29][9];   // f1=10, f2 = 30
-                double z12 = F99table[29][10];  // f1=12, f2 = 30
-                double z21 = F99table[30][9];   // f1=10, f2 = 40
-                double z22 = F99table[30][10];  // f1=12, f2 = 40
-                return bilinterpolation(z11, z12, z21, z22, f1-10, 12-f1, f2-30, 40-f2);
-            }
-            else if(f2 <= 60) {
-                double z11 = F99table[30][9];   // f1=10, f2 = 40
-                double z12 = F99table[30][10];  // f1=12, f2 = 40
-                double z21 = F99table[31][9];   // f1=10, f2 = 60
-                double z22 = F99table[31][10];  // f1=12, f2 = 60
-                return bilinterpolation(z11, z12, z21, z22, f1-10, 12-f1, f2-40, 60-f2);
-            }
-            else if(f2 <= 120) {
-                double z11 = F99table[31][9];   // f1=10, f2 = 60
-                double z12 = F99table[31][10];  // f1=12, f2 = 60
-                double z21 = F99table[32][9];   // f1=10, f2 = 120
-                double z22 = F99table[32][10];  // f1=12, f2 = 120
-                return bilinterpolation(z11, z12, z21, z22, f1-10, 12-f1, f2-60, 120-f2);
-            }
-            else {
-                double z11 = F99table[32][9];   // f1=10, f2 = 120
-                double z12 = F99table[32][10];  // f1=12, f2 = 120
-                double z21 = F99table[33][9];   // f1=10, f2 = ∞
-                double z22 = F99table[33][10];  // f1=12, f2 = ∞
-                return bilinterpolation(z11, z12, z21, z22, f1-10, 12-f1, f2-120, Integer.MAX_VALUE-f2);
-            }
+        else if(f1 <= 10) {
+            int f2index = f2 <= 40 ? 30 : f2 <= 60 ? 31 : f2 <= 120 ? 32 : 33;
+            double dx1 = f2 <= 40 ? (f2-30) : f2 <= 60 ? (f2-40) : f2 <= 120 ? (f2-60)  : (f2-120);
+            double dx2 = f2 <= 40 ? (40-f2) : f2 <= 60 ? (60-f2) : f2 <= 120 ? (120-f2) : (Integer.MAX_VALUE-f2);
+            double z1 = F99table[f2index-1][f1-1];
+            double z2 = F99table[f2index][f1-1];
+            return linterpolation(z1, z2, dx1, dx2);
         }
 
-        else if(f1 <= 15) {
-            if(f2 <= 30) {
-                double z1 = F99table[f2-1][10];  // f1=12
-                double z2 = F99table[f2-1][11];  // f1=15
-                return linterpolation(z1, z2, f1-12, 15-f1);
-            }
-            else if(f2 <= 40) {
-                double z11 = F99table[29][10];   // f1=12, f2 = 30
-                double z12 = F99table[29][11];   // f1=15, f2 = 30
-                double z21 = F99table[30][10];   // f1=12, f2 = 40
-                double z22 = F99table[30][11];   // f1=15, f2 = 40
-                return bilinterpolation(z11, z12, z21, z22, f1-12, 15-f1, f2-30, 40-f2);
-            }
-            else if(f2 <= 60) {
-                double z11 = F99table[30][10];   // f1=12, f2 = 40
-                double z12 = F99table[30][11];   // f1=15, f2 = 40
-                double z21 = F99table[31][10];   // f1=12, f2 = 60
-                double z22 = F99table[31][11];   // f1=15, f2 = 60
-                return bilinterpolation(z11, z12, z21, z22, f1-12, 15-f1, f2-40, 60-f2);
-            }
-            else if(f2 <= 120) {
-                double z11 = F99table[31][10];   // f1=12, f2 = 60
-                double z12 = F99table[31][11];   // f1=15, f2 = 60
-                double z21 = F99table[32][10];   // f1=12, f2 = 120
-                double z22 = F99table[32][11];   // f1=15, f2 = 120
-                return bilinterpolation(z11, z12, z21, z22, f1-12, 15-f1, f2-60, 120-f2);
-            }
-            else {
-                double z11 = F99table[32][10];   // f1=12, f2 = 120
-                double z12 = F99table[32][11];   // f1=15, f2 = 120
-                double z21 = F99table[33][10];   // f1=12, f2 = ∞
-                double z22 = F99table[33][11];   // f1=15, f2 = ∞
-                return bilinterpolation(z11, z12, z21, z22, f1-12, 15-f1, f2-120, Integer.MAX_VALUE-f2);
-            }
-        }
-
-        else if(f1 <= 20) {
-            if(f2 <= 30) {
-                double z1 = F99table[f2-1][11];  // f1=15
-                double z2 = F99table[f2-1][12];  // f1=20
-                return linterpolation(z1, z2, f1-15, 20-f1);
-            }
-            else if(f2 <= 40) {
-                double z11 = F99table[29][11];   // f1=15, f2 = 30
-                double z12 = F99table[29][12];   // f1=20, f2 = 30
-                double z21 = F99table[30][11];   // f1=15, f2 = 40
-                double z22 = F99table[30][12];   // f1=20, f2 = 40
-                return bilinterpolation(z11, z12, z21, z22, f1-15, 20-f1, f2-30, 40-f2);
-            }
-            else if(f2 <= 60) {
-                double z11 = F99table[30][11];   // f1=15, f2 = 40
-                double z12 = F99table[30][12];   // f1=20, f2 = 40
-                double z21 = F99table[31][11];   // f1=15, f2 = 60
-                double z22 = F99table[31][12];   // f1=20, f2 = 60
-                return bilinterpolation(z11, z12, z21, z22, f1-15, 20-f1, f2-40, 60-f2);
-            }
-            else if(f2 <= 120) {
-                double z11 = F99table[31][11];   // f1=15, f2 = 60
-                double z12 = F99table[31][12];   // f1=20, f2 = 60
-                double z21 = F99table[32][11];   // f1=15, f2 = 120
-                double z22 = F99table[32][12];   // f1=20, f2 = 120
-                return bilinterpolation(z11, z12, z21, z22, f1-15, 20-f1, f2-60, 120-f2);
-            }
-            else {
-                double z11 = F99table[32][11];   // f1=15, f2 = 120
-                double z12 = F99table[32][12];   // f1=20, f2 = 120
-                double z21 = F99table[33][11];   // f1=15, f2 = ∞
-                double z22 = F99table[33][12];   // f1=20, f2 = ∞
-                return bilinterpolation(z11, z12, z21, z22, f1-15, 20-f1, f2-120, Integer.MAX_VALUE-f2);
-            }
-        }
-
-        else if(f1 <= 24) {
-            if(f2 <= 30) {
-                double z1 = F99table[f2-1][12];  // f1=20
-                double z2 = F99table[f2-1][13];  // f1=24
-                return linterpolation(z1, z2, f1-20, 24-f1);
-            }
-            else if(f2 <= 40) {
-                double z11 = F99table[29][12];   // f1=20, f2 = 30
-                double z12 = F99table[29][13];   // f1=24, f2 = 30
-                double z21 = F99table[30][12];   // f1=20, f2 = 40
-                double z22 = F99table[30][13];   // f1=24, f2 = 40
-                return bilinterpolation(z11, z12, z21, z22, f1-20, 24-f1, f2-30, 40-f2);
-            }
-            else if(f2 <= 60) {
-                double z11 = F99table[30][12];   // f1=20, f2 = 40
-                double z12 = F99table[30][13];   // f1=24, f2 = 40
-                double z21 = F99table[31][12];   // f1=20, f2 = 60
-                double z22 = F99table[31][13];   // f1=24, f2 = 60
-                return bilinterpolation(z11, z12, z21, z22, f1-20, 24-f1, f2-40, 60-f2);
-            }
-            else if(f2 <= 120) {
-                double z11 = F99table[31][12];   // f1=20, f2 = 60
-                double z12 = F99table[31][13];   // f1=24, f2 = 60
-                double z21 = F99table[32][12];   // f1=20, f2 = 120
-                double z22 = F99table[32][13];   // f1=24, f2 = 120
-                return bilinterpolation(z11, z12, z21, z22, f1-20, 24-f1, f2-60, 120-f2);
-            }
-            else {
-                double z11 = F99table[32][12];   // f1=20, f2 = 120
-                double z12 = F99table[32][13];   // f1=24, f2 = 120
-                double z21 = F99table[33][12];   // f1=20, f2 = ∞
-                double z22 = F99table[33][13];   // f1=24, f2 = ∞
-                return bilinterpolation(z11, z12, z21, z22, f1-20, 24-f1, f2-120, Integer.MAX_VALUE-f2);
-            }
-        }
-
-        else if(f1 <= 30) {
-            if(f2 <= 30) {
-                double z1 = F99table[f2-1][13];  // f1=24
-                double z2 = F99table[f2-1][14];  // f1=30
-                return linterpolation(z1, z2, f1-24, 30-f1);
-            }
-            else if(f2 <= 40) {
-                double z11 = F99table[29][13];   // f1=24, f2 = 30
-                double z12 = F99table[29][14];   // f1=30, f2 = 30
-                double z21 = F99table[30][13];   // f1=24, f2 = 40
-                double z22 = F99table[30][14];   // f1=30, f2 = 40
-                return bilinterpolation(z11, z12, z21, z22, f1-24, 30-f1, f2-30, 40-f2);
-            }
-            else if(f2 <= 60) {
-                double z11 = F99table[30][13];   // f1=24, f2 = 40
-                double z12 = F99table[30][14];   // f1=30, f2 = 40
-                double z21 = F99table[31][13];   // f1=24, f2 = 60
-                double z22 = F99table[31][14];   // f1=30, f2 = 60
-                return bilinterpolation(z11, z12, z21, z22, f1-24, 30-f1, f2-40, 60-f2);
-            }
-            else if(f2 <= 120) {
-                double z11 = F99table[31][13];   // f1=24, f2 = 60
-                double z12 = F99table[31][14];   // f1=30, f2 = 60
-                double z21 = F99table[32][13];   // f1=24, f2 = 120
-                double z22 = F99table[32][14];   // f1=30, f2 = 120
-                return bilinterpolation(z11, z12, z21, z22, f1-24, 30-f1, f2-60, 120-f2);
-            }
-            else {
-                double z11 = F99table[32][13];   // f1=24, f2 = 120
-                double z12 = F99table[32][14];   // f1=30, f2 = 120
-                double z21 = F99table[33][13];   // f1=24, f2 = ∞
-                double z22 = F99table[33][14];   // f1=30, f2 = ∞
-                return bilinterpolation(z11, z12, z21, z22, f1-24, 30-f1, f2-120, Integer.MAX_VALUE-f2);
-            }
-        }
-
-        else if(f1 <= 40) {
-            if(f2 <= 30) {
-                double z1 = F99table[f2-1][14];  // f1=30
-                double z2 = F99table[f2-1][15];  // f1=40
-                return linterpolation(z1, z2, f1-30, 40-f1);
-            }
-            else if(f2 <= 40) {
-                double z11 = F99table[29][14];   // f1=30, f2 = 30
-                double z12 = F99table[29][15];   // f1=40, f2 = 30
-                double z21 = F99table[30][14];   // f1=30, f2 = 40
-                double z22 = F99table[30][15];   // f1=40, f2 = 40
-                return bilinterpolation(z11, z12, z21, z22, f1-30, 40-f1, f2-30, 40-f2);
-            }
-            else if(f2 <= 60) {
-                double z11 = F99table[30][14];   // f1=30, f2 = 40
-                double z12 = F99table[30][15];   // f1=40, f2 = 40
-                double z21 = F99table[31][14];   // f1=30, f2 = 60
-                double z22 = F99table[31][15];   // f1=40, f2 = 60
-                return bilinterpolation(z11, z12, z21, z22, f1-30, 40-f1, f2-40, 60-f2);
-            }
-            else if(f2 <= 120) {
-                double z11 = F99table[31][14];   // f1=30, f2 = 60
-                double z12 = F99table[31][15];   // f1=40, f2 = 60
-                double z21 = F99table[32][14];   // f1=30, f2 = 120
-                double z22 = F99table[32][15];   // f1=40, f2 = 120
-                return bilinterpolation(z11, z12, z21, z22, f1-30, 40-f1, f2-60, 120-f2);
-            }
-            else {
-                double z11 = F99table[32][14];   // f1=30, f2 = 120
-                double z12 = F99table[32][15];   // f1=40, f2 = 120
-                double z21 = F99table[33][14];   // f1=30, f2 = ∞
-                double z22 = F99table[33][15];   // f1=40, f2 = ∞
-                return bilinterpolation(z11, z12, z21, z22, f1-30, 40-f1, f2-120, Integer.MAX_VALUE-f2);
-            }
-        }
-
-        else if(f1 <= 60) {
-            if(f2 <= 30) {
-                double z1 = F99table[f2-1][15];  // f1=40
-                double z2 = F99table[f2-1][16];  // f1=60
-                return linterpolation(z1, z2, f1-40, 60-f1);
-            }
-            else if(f2 <= 40) {
-                double z11 = F99table[29][15];   // f1=40, f2 = 30
-                double z12 = F99table[29][16];   // f1=60, f2 = 30
-                double z21 = F99table[30][15];   // f1=40, f2 = 40
-                double z22 = F99table[30][16];   // f1=60, f2 = 40
-                return bilinterpolation(z11, z12, z21, z22, f1-40, 60-f1, f2-30, 40-f2);
-            }
-            else if(f2 <= 60) {
-                double z11 = F99table[30][15];   // f1=40, f2 = 40
-                double z12 = F99table[30][16];   // f1=60, f2 = 40
-                double z21 = F99table[31][15];   // f1=40, f2 = 60
-                double z22 = F99table[31][16];   // f1=60, f2 = 60
-                return bilinterpolation(z11, z12, z21, z22, f1-40, 60-f1, f2-40, 60-f2);
-            }
-            else if(f2 <= 120) {
-                double z11 = F99table[31][15];   // f1=40, f2 = 60
-                double z12 = F99table[31][16];   // f1=60, f2 = 60
-                double z21 = F99table[32][15];   // f1=40, f2 = 120
-                double z22 = F99table[32][16];   // f1=60, f2 = 120
-                return bilinterpolation(z11, z12, z21, z22, f1-40, 60-f1, f2-60, 120-f2);
-            }
-            else {
-                double z11 = F99table[32][15];   // f1=40, f2 = 120
-                double z12 = F99table[32][16];   // f1=60, f2 = 120
-                double z21 = F99table[33][15];   // f1=40, f2 = ∞
-                double z22 = F99table[33][16];   // f1=60, f2 = ∞
-                return bilinterpolation(z11, z12, z21, z22, f1-40, 60-f1, f2-120, Integer.MAX_VALUE-f2);
-            }
-        }
-
-        else if(f1 <= 120) {
-            if(f2 <= 30) {
-                double z1 = F99table[f2-1][16];  // f1=60
-                double z2 = F99table[f2-1][17];  // f1=120
-                return linterpolation(z1, z2, f1-60, 120-f1);
-            }
-            else if(f2 <= 40) {
-                double z11 = F99table[29][16];   // f1=60, f2 = 30
-                double z12 = F99table[29][17];   // f1=120, f2 = 30
-                double z21 = F99table[30][16];   // f1=60, f2 = 40
-                double z22 = F99table[30][17];   // f1=120, f2 = 40
-                return bilinterpolation(z11, z12, z21, z22, f1-60, 120-f1, f2-30, 40-f2);
-            }
-            else if(f2 <= 60) {
-                double z11 = F99table[30][16];   // f1=60, f2 = 40
-                double z12 = F99table[30][17];   // f1=120, f2 = 40
-                double z21 = F99table[31][16];   // f1=60, f2 = 60
-                double z22 = F99table[31][17];   // f1=120, f2 = 60
-                return bilinterpolation(z11, z12, z21, z22, f1-60, 120-f1, f2-40, 60-f2);
-            }
-            else if(f2 <= 120) {
-                double z11 = F99table[31][16];   // f1=60, f2 = 60
-                double z12 = F99table[31][17];   // f1=120, f2 = 60
-                double z21 = F99table[32][16];   // f1=60, f2 = 120
-                double z22 = F99table[32][17];   // f1=120, f2 = 120
-                return bilinterpolation(z11, z12, z21, z22, f1-60, 120-f1, f2-60, 120-f2);
-            }
-            else {
-                double z11 = F99table[32][16];   // f1=60, f2 = 120
-                double z12 = F99table[32][17];   // f1=120, f2 = 120
-                double z21 = F99table[33][16];   // f1=60, f2 = ∞
-                double z22 = F99table[33][17];   // f1=120, f2 = ∞
-                return bilinterpolation(z11, z12, z21, z22, f1-60, 120-f1, f2-120, Integer.MAX_VALUE-f2);
-            }
-        }
-
+        // bilinear interpolation (of the table values)
         else {
-            if(f2 <= 30) {
-                double z1 = F99table[f2-1][17];  // f1=60
-                double z2 = F99table[f2-1][18];  // f1=120
-                return linterpolation(z1, z2, f1-120, Integer.MAX_VALUE-f1);
-            }
-            else if(f2 <= 40) {
-                double z11 = F99table[29][17];   // f1=60, f2 = 30
-                double z12 = F99table[29][18];   // f1=120, f2 = 30
-                double z21 = F99table[30][17];   // f1=60, f2 = 40
-                double z22 = F99table[30][18];   // f1=120, f2 = 40
-                return bilinterpolation(z11, z12, z21, z22, f1-120, Integer.MAX_VALUE-f1, f2-30, 40-f2);
-            }
-            else if(f2 <= 60) {
-                double z11 = F99table[30][17];   // f1=60, f2 = 40
-                double z12 = F99table[30][18];   // f1=120, f2 = 40
-                double z21 = F99table[31][17];   // f1=60, f2 = 60
-                double z22 = F99table[31][18];   // f1=120, f2 = 60
-                return bilinterpolation(z11, z12, z21, z22, f1-120, Integer.MAX_VALUE-f1, f2-40, 60-f2);
-            }
-            else if(f2 <= 120) {
-                double z11 = F99table[31][17];   // f1=60, f2 = 60
-                double z12 = F99table[31][18];   // f1=120, f2 = 60
-                double z21 = F99table[32][17];   // f1=60, f2 = 120
-                double z22 = F99table[32][18];   // f1=120, f2 = 120
-                return bilinterpolation(z11, z12, z21, z22, f1-120, Integer.MAX_VALUE-f1, f2-60, 120-f2);
-            }
-            else {
-                double z11 = F99table[32][17];   // f1=60, f2 = 120
-                double z12 = F99table[32][18];   // f1=120, f2 = 120
-                double z21 = F99table[33][17];   // f1=60, f2 = ∞
-                double z22 = F99table[33][18];   // f1=120, f2 = ∞
-                return bilinterpolation(z11, z12, z21, z22, f1-120, Integer.MAX_VALUE-f1, f2-120, Integer.MAX_VALUE-f2);
-            }
+            int f1index = f1 <= 12 ? 10 : f1 <= 15 ? 11 : f1 <= 20 ? 12 : f1 <= 24 ? 13 : f1 <= 30 ? 14 : f1 <= 40 ? 15 : f1 <= 60 ? 16 : f1 <= 120 ? 17 : 18;
+            int f2index = f2 <= 40 ? 30 : f2 <= 60 ? 31 : f2 <= 120 ? 32 : 33;
+            double dx1 = f1 <= 12 ? (f1-10) : f1 <= 15 ? (f1-12) : f1 <= 20 ? (f1-15) : f1 <= 24 ? (f1-20) : f1 <= 30 ? (f1-24) : f1 <= 40 ? (f1-30) : f1 <= 60 ? (f1-40) : f1 <= 120 ? (f1-60) : (f1-120);
+            double dx2 = f1 <= 12 ? (12-f1) : f1 <= 15 ? (15-f1) : f1 <= 20 ? (20-f1) : f1 <= 24 ? (24-f1) : f1 <= 30 ? (30-f1) : f1 <= 40 ? (40-f1) : f1 <= 60 ? (60-f1) : f1 <= 120 ? (120-f1) : (Integer.MAX_VALUE-f1);
+            double dy1 = f2 <= 40 ? (f2-30) : f2 <= 60 ? (f2-40) : f2 <= 120 ? (f2-60)  : (f2-120);
+            double dy2 = f2 <= 40 ? (40-f2) : f2 <= 60 ? (60-f2) : f2 <= 120 ? (120-f2) : (Integer.MAX_VALUE-f2);
+            double z11 = F99table[f2index-1][f1index-1];
+            double z12 = F99table[f2index-1][f1index];
+            double z21 = F99table[f2index][f1index-1];
+            double z22 = F99table[f2index][f1index];
+            return bilinterpolation(z11, z12, z21, z22, dx1, dx2, dy1, dy2);
         }
+
+
     }
 
     //-------------------------------------------------------------------------
