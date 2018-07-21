@@ -586,6 +586,81 @@ public class SCStatistics {
     }
     
     //-------------------------------------------------------------------------
+    /*  Linear interpolation scheme
+
+       dx1               dx2
+    o--------X-------------------------o
+    z11                                z12
+
+    */
+    //-------------------------------------------------------------------------
+    /**
+     * Linear interpolation. Estimates (or predict) the value of an argument if two argument-value pairs are already known.
+     * @param  dmean1 first mean
+     * @param  z1 value of the first argument
+     * @param  z2 value of the second argument
+     * @param  dx1 distance from the first point - |arg - arg1|
+     * @param  dx2 distance from the second point- |arg - arg2|
+     * @return  double - the interpolated (i.e. the estimated) value
+     */
+    static double linterpolation(double z1, double z2, double dx1, double dx2) {
+        return (dx1*z2 + dx2*z1) / (dx1 + dx2);
+    }
+
+    //-------------------------------------------------------------------------
+    /*  Bilinear interpolation scheme
+
+    z21                                z22
+    o----------------------------------o
+    |      |                           |
+    |      |                           |
+    |      |                           |
+    |      |                           |
+    |      |                           |
+    |      | dy2                       |
+    |      |                           |
+    |      |                           |
+    |      |                           |
+    |      |                           |
+    |      |                           |
+    | dx1  |            dx2            |
+    |------X---------------------------|
+    |      |                           |
+    |      | dy1                       |
+    |      |                           |
+    o----------------------------------o
+    z11                                z12
+
+    */
+    //-------------------------------------------------------------------------
+    /**
+     * Bilinear interpolation. Estimates (or predict) the value of an point in 2D space if four (surrounding) point-value pairs are already known.
+     * @param  dmean1 first mean
+     * @param  z11 value of the first point in (surrounding) square
+     * @param  z12 value of the second point in square
+     * @param  z21 value of the third point in square
+     * @param  z22 value of the fourth point in square
+     * @param  dx1 distance from the first (or third) point along x-axis - |X - x11| or |X - x21|
+     * @param  dx2 distance from the second (or fourth) point along x-axis - |X - x12| or |X - x22|
+     * @param  dy1 distance from the first (or second) point along y-axis - |Y - y11| or |Y - y12|
+     * @param  dy2 distance from the third (or fourth) point along y-axis - |Y - y21| or |Y - y22|
+     * @return  double - the interpolated (i.e. the estimated) value of the (X,Y) point
+     */
+    static double bilinterpolation(double z11, double z12, double z21, double z22, double dx1, double dx2, double dy1, double dy2) {
+        double fx1 = dx2;
+        double fx2 = dx1;
+        double fy1 = dy2;
+        double fy2 = dy1;
+
+        double Zy1 = (fx1*z11 + fx2*z12) / (fx1+fx2);
+        double Zy2 = (fx1*z21 + fx2*z22) / (fx1+fx2);
+
+        double Z = (fy1*Zy1 + fy2*Zy2) / (fy1+fy2);
+
+        return Z;
+    }
+
+    //-------------------------------------------------------------------------
     /**
      * Returns the set of resulting parameters to analyze linear regression
      * @param  x given domain array
