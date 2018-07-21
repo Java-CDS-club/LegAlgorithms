@@ -240,6 +240,10 @@ public class SCAlgorithms {
 
             if(!bcondition || values.length == iend) {
                 if (iend - istart != minelements) { // i.e. iend - istart > minelements
+                    int ishift = shiftIntervalRight(times, values, istart, iend, bRegressionAnalysis);
+                    istart += ishift;
+                    iend += ishift;
+
                     SpanPair sp = new SpanPair(istart, (iend != values.length ? --iend : iend));
                     periods.add(sp);
                     
