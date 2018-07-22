@@ -2,14 +2,6 @@ import java.util.ArrayList;
 
 public class SCAlgorithms {
     
-	// if all the values in interval do not differ more, we can consider it the steady course/speed interval
-	static double COURSE_STEADY_RANGE = 0.5;
-	static double SPEED_STEADY_RANGE = 0.1;
-    
-	// if standard deviation is not greater, we can consider it the steady course/speed interval
-	static double COURSE_STEADY_STDEV = 0.05;
-	static double SPEED_STEADY_STDEV = 0.01;
-    
     // internal utility data structures
     public static class SpanPair{
         public SpanPair (int _first, int _second) {
