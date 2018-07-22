@@ -205,10 +205,12 @@ public class SCAlgorithms {
     /**
      * Creates an array of steady value (course or speed) intervals from an 
      * array of input values. Based on statistics and calculated limits 
-     * for deviation from the mean value. The maximal deviation is compared to the test statistics..
+     * for deviation from the mean value. The maximal deviation is compared to the test statistics.
+     * Inclination of regression line is analyzed afterwards.
      * @param  times the array of times
      * @param  values the array of values
      * @param minelements the minimal number of elements in the 'steady' interval
+     * @param bRegressionAnalysis perform regression analysis if true
      * @return ArrayList< SpanPair > - array of steady intervals extracted form totes
      * todo it should be optimized. It can run significantly faster.
      */
@@ -217,41 +219,55 @@ public class SCAlgorithms {
             throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_mean_st_maxdev - input arrays of different length");
 
         ArrayList<SpanPair> periods = new ArrayList<>();
-        
+
         int istart=0;
         int iend = istart + minelements;
-                        
+
         while ((istart <= values.length - minelements) && (iend <= values.length)) {
             boolean bcondition;
             final double dmax = SCStatistics.max(values, istart, iend);
             final double dmin = SCStatistics.min(values, istart, iend);
             final double dstdev = SCStatistics.stdev(values, istart, iend);
-            
+
             // if all the values are in the predefined small range or 
             // if they deviate within the numbers precision (2 decimals, here)
             // we can drop out calculations and consider it to be steady course/speed interval
-            if (SPEED_STEADY_RANGE >= (dmax - dmin) || SPEED_STEADY_STDEV >= dstdev) 
+            if (SCConstants.SPEED_STEADY_RANGE >= (dmax - dmin) || SCConstants.SPEED_STEADY_STDEV >= dstdev) 
                 bcondition = true;
             else {
                 bcondition = areDeviationsInAllowedLimits(values, istart, iend);
-                if(bcondition && bRegressionAnalysis)
-                    bcondition &= isRegressionLineHorizontal(times, values, istart, iend, SPEED_STEADY_RANGE);
             }
 
             if(!bcondition || values.length == iend) {
-                if (iend - istart != minelements) { // i.e. iend - istart > minelements
-                    int ishift = shiftIntervalRight(times, values, istart, iend, bRegressionAnalysis);
-                    istart += ishift;
-                    iend += ishift;
 
-                    SpanPair sp = new SpanPair(istart, (iend != values.length ? --iend : iend));
-                    periods.add(sp);
-                    
-                    istart = iend;
-                    iend += minelements;
-                }
-                else
+                if(iend - istart == minelements) // if no success; if no steady interval at the very beginning - then, iterate forward.
                     iend = ++istart + minelements;
+
+                else {
+                    boolean cond_regression = bRegressionAnalysis ? true : false;
+
+                    // Is horizontal line - linear regressiona analysis. If not, iterate backward until finding horizontal line.
+                    if(bRegressionAnalysis) {
+                        do {
+                            cond_regression = isRegressionLineHorizontal(times, values, istart, iend, SCConstants.SPEED_STEADY_RANGE);
+                            } while (!cond_regression && iend-- > istart + minelements);
+                        }
+
+                    if(!bRegressionAnalysis || cond_regression) {
+                        int ishift = shiftIntervalRight(times, values, istart, iend, bRegressionAnalysis);
+                        istart += ishift;
+                        iend += ishift;
+
+                        SpanPair sp = new SpanPair(istart, (iend != values.length ? --iend : iend));
+                        periods.add(sp);
+                        
+                        istart = iend;
+                        iend += minelements;
+                    }
+                    else // if no interval passed regression test - iterate forward
+                        iend = ++istart + minelements;
+                }
+
             }
             else
                 iend++;
