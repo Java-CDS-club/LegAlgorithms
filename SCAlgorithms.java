@@ -204,10 +204,11 @@ public class SCAlgorithms {
      * @param  values the array of values
      * @param minelements the minimal number of elements in the 'steady' interval
      * @param bRegressionAnalysis perform regression analysis if true
+     * @param  steady_stdev it will be considered that interval is steady if standard deviation is less then this predefined argument
      * @return ArrayList< SpanPair > - array of steady intervals extracted form totes
      * todo it should be optimized. It can run significantly faster.
      */
-    public static ArrayList<SpanPair> fifo_mean_st_maxdev(double[] times, double[] values, int minelements, boolean bRegressionAnalysis) {
+    public static ArrayList<SpanPair> fifo_mean_st_maxdev(double[] times, double[] values, int minelements, boolean bRegressionAnalysis, double steady_stdev) {
         if (times.length != values.length)
             throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_mean_st_maxdev - input arrays of different length");
 
@@ -225,7 +226,7 @@ public class SCAlgorithms {
             // if all the values are in the predefined small range or 
             // if they deviate within the numbers precision (2 decimals, here)
             // we can drop out calculations and consider it to be steady course/speed interval
-            if (SCConstants.SPEED_STEADY_RANGE >= (dmax - dmin) || SCConstants.SPEED_STEADY_STDEV >= dstdev) 
+            if (SCConstants.SPEED_STEADY_RANGE >= (dmax - dmin) || steady_stdev >= dstdev) 
                 bcondition = true;
             else {
                 bcondition = areDeviationsInAllowedLimits(values, istart, iend);
