@@ -8,6 +8,29 @@ import java.util.Iterator;
  */
 public class SCStatistics {
 	
+    // Variance: used for variance analysis of potentially steady-intervals
+    public static class Variance{
+        public Variance (int _index, int _f, double _m2) {
+            index = _index;
+            f = _f;
+            m2 = _m2;
+        }
+        
+        int index;
+        int f;          // degrees of freedom
+        double m2;      // variance (sigma0 * sigma0)
+    }
+    
+    // Used for sorting variances in ascending order
+    static class SortVariances implements Comparator<Variance>
+    {
+        @Override
+        public int compare(Variance a, Variance b) {
+            return Double.compare(a.m2, b.m2);
+        }
+    }    
+    
+    // Results from linear regression analysis
     public static class RegrResults {
         int istart;
         int iend;
@@ -559,6 +582,52 @@ public class SCStatistics {
             return quantil_infinity; // 1.96
     }
     
+    //-------------------------------------------------------------------------
+    /**
+     * Returns an array of indexes of redundant intervals (filtered out because of non-homogeneous variance). Equal range variance statistical test.  
+     * @param  _variances the array of Variance structures
+     * @return the list of isolated (bad) intervals. These intervals should be removed afterwards from the list of overall intervals.
+     */
+    public static ArrayList<Integer> isolateNonHomogeneous(ArrayList<Variance> _variances) {
+    	ArrayList<Integer> indexes = new ArrayList<>();
+    	
+    	if(_variances.size() < 2)
+            return indexes;
+        
+        ArrayList<Variance> variances = (ArrayList<Variance>) _variances.clone();
+
+        Collections.sort(variances, new SortVariances());
+
+        int f0 = variances.get(0).f;
+        double m20 = variances.get(0).m2;
+        Variance disp = new Variance(variances.size(), f0, m20);
+        for(int ii = 1; ii < variances.size(); ii++  ) {
+            Variance disp_i = variances.get(ii);
+            double d1 = Math.sqrt(disp_i.m2);
+            double d2 = 3.0 * SCConstants.SPEED_STEADY_STDEV;
+            if(d1 < d2) {
+                disp.f = disp_i.f;
+                disp.m2 = disp_i.m2;
+                continue;
+            }
+            
+            double test = disp_i.m2 / disp.m2;
+            double quantile = get999FQuantile(disp_i.f, disp.f);
+            if(test <= quantile) {
+                disp.f = disp_i.f;
+                disp.m2 = disp_i.m2;
+            }
+            else {
+                for(int jj=ii; jj<variances.size(); jj++)
+                    indexes.add(variances.get(jj).index);
+                
+                break;
+            }
+        }
+
+        return indexes;
+    }
+
     //-------------------------------------------------------------------------
     /**
      * Equal mean values statistical test. Returns true if two mean values 
