@@ -250,8 +250,6 @@ public class SCAlgorithms {
 
                     if(!bRegressionAnalysis || cond_regression) {
                         int ishift = shiftIntervalRight(times, values, istart, iend, bRegressionAnalysis);
-                        if(ishift != 0)
-                            debug_out("shifted interval (" + istart + "," + iend + ") is shifted " + ishift + "  places right");
                         istart += ishift;
                         iend += ishift;
 
