@@ -352,7 +352,6 @@ public class SCAlgorithms {
         for(int jj = _4remove.size()-1; jj >= 0; jj--) {
             Integer myint = _4remove.get(jj);
             speed_intervals.remove(myint.intValue());
-            System.out.println("REMOVED " + myint);
         }
 
         return speed_intervals;
