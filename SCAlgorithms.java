@@ -141,12 +141,13 @@ public class SCAlgorithms {
      * @param  values the array of values
      * @param  istart (inclusive) lower index of the sub-array
      * @param  iend (exclusive) upper index of the sub-array
-     * @param  steady_range the regression line will be considered horizontal if its grow is less then this predefined argument
+     * @param  steady_stdev it will be considered that deviations are 
+     * in allowed limits if standard deviation is less then this predefined argument
      * @return boolean - true if we can consider regression line horizontal
      */
-    static boolean areDeviationsInAllowedLimits(double[] values, int istart, int iend) {
+    static boolean areDeviationsInAllowedLimits(double[] values, int istart, int iend, double steady_stdev) {
         final double dstdev = SCStatistics.stdev(values, istart, iend);
-        if (dstdev < SPEED_STEADY_STDEV) // Preventing devzero errors
+        if (dstdev < steady_stdev) // Preventing devzero errors
             return true;
         
         final double dmax = SCStatistics.max(values, istart, iend);
