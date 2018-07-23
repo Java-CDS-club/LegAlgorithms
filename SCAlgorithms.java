@@ -440,4 +440,55 @@ public class SCAlgorithms {
 
         return intersection;
     }
+
+    //-------------------------------------------------------------------------
+    public static ArrayList<SpanPair> extractStaedySpeeds(ArrayList<Tote> totes) {
+        double[] times = SCStatistics.getRelativeTimes(totes);
+        double[] values = SCStatistics.getSpeeds(totes);
+
+        // Apply max-deviation + regression check algorithm
+        ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = SCAlgorithms.fifo_mean_st_maxdev(times, values, 35, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
+        
+        // Merge neighbourighing steady-speed intervals (those that pass statistical equal-means test)
+        ArrayList<SCAlgorithms.SpanPair> speed_intervals = SCAlgorithms.merge_intervals(values, speed_intervals0);
+
+        // Remove redundant intervals (peaks, holes). They all have non-homoggenous variance.
+        
+        // Find them...
+        ArrayList<SCStatistics.Variance> list = new ArrayList<>();
+        for(int ii=0; ii<speed_intervals.size(); ii++) {
+            int index_start = speed_intervals.get(ii).first;
+            int index_end = speed_intervals.get(ii).second;
+            int numelements = index_end - index_start;
+            double dstdev = SCStatistics.stdev(values, index_start, index_end);
+            list.add(new SCStatistics.Variance(ii, numelements-1,  dstdev*dstdev));
+        }
+
+        ArrayList<Integer> _4remove = SCStatistics.isolateNonHomogeneous(list, SCConstants.SPEED_STEADY_STDEV);
+
+        // ... and remove them
+        Collections.sort(_4remove);
+        for(int jj = _4remove.size()-1; jj >= 0; jj--) {
+            Integer myint = _4remove.get(jj);
+            speed_intervals.remove(myint.intValue());
+            System.out.println("REMOVED " + myint);
+        }
+
+        return speed_intervals;
+    }
+
+    //-------------------------------------------------------------------------
+    public static ArrayList<SpanPair> extractStaedyHeadings(ArrayList<Tote> totes) {
+        double[] times = SCStatistics.getRelativeTimes(totes);
+        double[] values = SCStatistics.getHeadings(totes);
+
+        // Apply max-deviation + regression check algorithm
+        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = SCAlgorithms.fifo_mean_st_maxdev(times, values, 35, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
+
+        // Merge neighbourighing steady-course intervals (those that pass statistical equal-means test)
+        ArrayList<SCAlgorithms.SpanPair> course_intervals = SCAlgorithms.merge_intervals(values, course_intervals0);
+
+        return course_intervals;
+    }
+
 }
