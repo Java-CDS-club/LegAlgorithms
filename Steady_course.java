@@ -29,9 +29,6 @@ public class Steady_course {
                 double[] timesreg = SCStatistics.getRelativeTimes(totes, index_start, index_end);
                 double delapsedtime = timesreg[timesreg.length - 1] - timesreg[0];
 
-                String spath = "course_" + index_start + "_" + index_end + ".txt";
-                SCFileReader.writeHeadings2File(totes, index_start, index_end, spath, true, true);
-
                 System.out.println("index: " + index_start + " - " + index_end + 
                                    "  numelements = " + numelements + 
                                    "  elapsed time = " + delapsedtime);
