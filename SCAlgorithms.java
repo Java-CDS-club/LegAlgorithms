@@ -249,7 +249,7 @@ public class SCAlgorithms {
                         }
 
                     if(!bRegressionAnalysis || cond_regression) {
-                        int ishift = shiftIntervalRight(times, values, istart, iend, bRegressionAnalysis);
+                        int ishift = shiftIntervalRight(times, values, istart, iend, bRegressionAnalysis, steady_stdev);
                         istart += ishift;
                         iend += ishift;
 
@@ -280,9 +280,12 @@ public class SCAlgorithms {
      * @param  values the array of values
      * @param  istart (inclusive) lower index of the sub-array
      * @param  iend (exclusive) upper index of the sub-array
+     * @param bRegressionAnalysis perform regression analysis if true
+     * @param  steady_stdev it will be considered that deviations are 
+     * in allowed limits if standard deviation is less then this predefined argument
      * @return int - Return a number of possible (and recommended) shifting to the right
      */
-    public static int shiftIntervalRight(double[] times, double[] values, int istart, int iend, boolean bRegressionAnalysis) {
+    public static int shiftIntervalRight(double[] times, double[] values, int istart, int iend, boolean bRegressionAnalysis, double steady_stdev) {
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.shiftIntervalRight - 'istart' index (" + istart + ") is less than 0.");
 
@@ -296,7 +299,7 @@ public class SCAlgorithms {
             return 0;
 
         // next interval is not proper if it doesn't fulfill the basic condition
-        if(!areDeviationsInAllowedLimits(values, istart+1, iend+1))
+        if(!areDeviationsInAllowedLimits(values, istart+1, iend+1, steady_stdev))
             return 0;
 
         int numelements = iend - istart;
@@ -325,7 +328,7 @@ public class SCAlgorithms {
         }
 
         // the steady interval should be shifted for 1 or even more (recursive call)
-        return 1 + shiftIntervalRight(times, values, istart+1, iend+1, bRegressionAnalysis);
+        return 1 + shiftIntervalRight(times, values, istart+1, iend+1, bRegressionAnalysis, steady_stdev);
     }
 
     //-------------------------------------------------------------------------
