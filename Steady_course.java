@@ -20,19 +20,19 @@ public class Steady_course {
             ArrayList<SCAlgorithms.SpanPair> steady_CourseAndSpeed_intervals = SCAlgorithms.intersectLists(course0_intervals, speed0_intervals);
 
             // Trace the results
-            System.out.println("There are " + steady_CourseAndSpeed_intervals.size() + " steady course intervals.");
-            for(int ii=0; ii<steady_CourseAndSpeed_intervals.size(); ii++) {
-                int index_start = steady_CourseAndSpeed_intervals.get(ii).first;
-                int index_end = steady_CourseAndSpeed_intervals.get(ii).second;
-                int numelements = index_end - index_start;
+            //System.out.println("There are " + (any list from above).size() + " steady course intervals.");
+            //for(int ii=0; ii<(any list from above).size(); ii++) {
+            //    int index_start = (any list from above).get(ii).first;
+            //    int index_end = (any list from above).get(ii).second;
+            //    int numelements = index_end - index_start;
 
-                double[] timesreg = SCStatistics.getRelativeTimes(totes, index_start, index_end);
-                double delapsedtime = timesreg[timesreg.length - 1] - timesreg[0];
+            //    double[] timesreg = SCStatistics.getRelativeTimes(totes, index_start, index_end);
+            //    double delapsedtime = timesreg[timesreg.length - 1] - timesreg[0];
 
-                System.out.println("index: " + index_start + " - " + index_end + 
-                                   "  numelements = " + numelements + 
-                                   "  elapsed time = " + delapsedtime);
-            }
+            //    System.out.println("index: " + index_start + " - " + index_end + 
+            //                       "  numelements = " + numelements + 
+            //                       "  elapsed time = " + delapsedtime);
+            //}
     	}
 
     	catch(Exception e) {
