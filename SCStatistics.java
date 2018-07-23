@@ -586,9 +586,11 @@ public class SCStatistics {
     /**
      * Returns an array of indexes of redundant intervals (filtered out because of non-homogeneous variance). Equal range variance statistical test.  
      * @param  _variances the array of Variance structures
+     * @param  steady_stdev interval will not be considered redundant if its standard deviation is within the limits defined 
+     * by this parameter (this parameter is usually the decimal precision of written values)
      * @return the list of isolated (bad) intervals. These intervals should be removed afterwards from the list of overall intervals.
      */
-    public static ArrayList<Integer> isolateNonHomogeneous(ArrayList<Variance> _variances) {
+    public static ArrayList<Integer> isolateNonHomogeneous(ArrayList<Variance> _variances, double steady_stdev) {
     	ArrayList<Integer> indexes = new ArrayList<>();
     	
     	if(_variances.size() < 2)
@@ -604,7 +606,7 @@ public class SCStatistics {
         for(int ii = 1; ii < variances.size(); ii++  ) {
             Variance disp_i = variances.get(ii);
             double d1 = Math.sqrt(disp_i.m2);
-            double d2 = 3.0 * SCConstants.SPEED_STEADY_STDEV;
+            double d2 = 3.0 * steady_stdev;
             if(d1 < d2) {
                 disp.f = disp_i.f;
                 disp.m2 = disp_i.m2;
