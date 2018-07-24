@@ -598,7 +598,7 @@ public class SCStatistics {
     	if(_variances.size() < 2)
             return indexes;
         
-        ArrayList<Variance> variances = (ArrayList<Variance>) _variances.clone();
+        ArrayList<Variance> variances = new ArrayList<Variance>(_variances);
 
         Collections.sort(variances, new SortVariances());
 
