@@ -326,7 +326,13 @@ public class SCAlgorithms {
     }
 
     //-------------------------------------------------------------------------
+    /**
+     * Creates an array of steady-speed intervals from an input array of totes.
+     * @param  totes given ArrayList of Tote objects
+     * @return ArrayList< SpanPair > - array of steady-speed intervals extracted from totes
+     */
     public static ArrayList<SpanPair> extractStaedySpeeds(ArrayList<Tote> totes) {
+
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getSpeeds(totes);
 
@@ -361,6 +367,11 @@ public class SCAlgorithms {
     }
 
     //-------------------------------------------------------------------------
+    /**
+     * Creates an array of steady-course intervals from an input array of totes.
+     * @param  totes given ArrayList of Tote objects
+     * @return ArrayList< SpanPair > - array of steady-course intervals extracted from totes
+     */
     public static ArrayList<SpanPair> extractStaedyHeadings(ArrayList<Tote> totes) {
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getHeadings(totes);
