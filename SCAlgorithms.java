@@ -4,28 +4,28 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class SCAlgorithms {
-    
+
     // internal utility data structures
     public static class SpanPair{
         public SpanPair (int _first, int _second) {
             first = _first;
             second = _second;
         }
-        
+
         public int first;
         public int second;
     }
-    
+
     //-------------------------------------------------------------------------
     /**
-     * Returns true if we all the deviations from mean value are within the statistically allowed limits 
+     * Returns true if we all the deviations from mean value are within the statistically allowed limits
      * (hypothesis |x(i)-x'| > 0 is tested; alternative hypothesis is |x(i)-x'| = 0
      * test value (x(i)-x')/sigma(x)*sqrt(n-1)/sqrt(n) has Student(0,1) distribution with n-1 degrees of freedom)
      * @param  times the array of times
      * @param  values the array of values
      * @param  istart (inclusive) lower index of the sub-array
      * @param  iend (exclusive) upper index of the sub-array
-     * @param  steady_stdev it will be considered that deviations are 
+     * @param  steady_stdev it will be considered that deviations are
      * in allowed limits if standard deviation is less then this predefined argument
      * @return boolean - true if we can consider regression line horizontal
      */
@@ -34,7 +34,7 @@ public class SCAlgorithms {
         final double dstdev = SCStatistics.stdev(values, istart, iend);
         if (dstdev < steady_stdev) // Preventing devzero errors
             return true;
-        
+
         final double dmax = SCStatistics.max(values, istart, iend);
         final double dmin = SCStatistics.min(values, istart, iend);
         final int numelements = iend - istart;
@@ -42,13 +42,13 @@ public class SCAlgorithms {
         final double ddeviation = Double.max(dmax - dmean, dmean - dmin);
         final double dtest = ddeviation / dstdev * Math.sqrt(numelements / (numelements-1));
         final double dquantile = numelements > 2 ? SCStatistics.get99StudentQuantil(numelements - 2) : SCStatistics.get99StudentQuantil(numelements - 1);
-        
+
         return dtest <= dquantile;
     }
-    
+
     //-------------------------------------------------------------------------
     /**
-     * Returns true if we can consider regression line horizontal 
+     * Returns true if we can consider regression line horizontal
      * (regression analysis: hypothesis |a| > 0 is tested; alternative hypothesis is a = 0
      * test value (a-0)/sigma(a) has Student(0,1) distribution with n-2 degrees of freedom)
      * @param  times the array of times
@@ -65,10 +65,10 @@ public class SCAlgorithms {
         final double dstdev = SCStatistics.stdev(values, istart, iend);
         final double regression_grow = Math.abs(res.a * (times[iend-1] - times[istart]));
         boolean cond1 = regression_grow <= Double.max(steady_range, dstdev);
-        
-        // if regression line cannot increase significntly we can consider the line horizontal 
+
+        // if regression line cannot increase significntly we can consider the line horizontal
         if (cond1) return true;
-        
+
         // ... otherwise we have to compare test statistics
         boolean cond2 = true;
         if(res.ma > 1.e-8) { // Preventing devzero errors
@@ -76,14 +76,14 @@ public class SCAlgorithms {
             final double dquantile = numelements > 2 ? SCStatistics.get999StudentQuantil(numelements - 2) : SCStatistics.get999StudentQuantil(1) ;
             cond2 = dtest <= dquantile;
         }
-        
+
         return cond2;
     }
-    
+
     //-------------------------------------------------------------------------
     /**
-     * Creates an array of steady value (course or speed) intervals from an 
-     * array of input values. Based on statistics and calculated limits 
+     * Creates an array of steady value (course or speed) intervals from an
+     * array of input values. Based on statistics and calculated limits
      * for deviation from the mean value. The maximal deviation is compared to the test statistics.
      * Inclination of regression line is analyzed afterwards.
      * @param  times the array of times
@@ -111,10 +111,10 @@ public class SCAlgorithms {
             final double dmin = SCStatistics.min(values, istart, iend);
             final double dstdev = SCStatistics.stdev(values, istart, iend);
 
-            // if all the values are in the predefined small range or 
+            // if all the values are in the predefined small range or
             // if they deviate within the numbers precision (2 decimals, here)
             // we can drop out calculations and consider it to be steady course/speed interval
-            if (steady_range >= (dmax - dmin) || steady_stdev >= dstdev) 
+            if (steady_range >= (dmax - dmin) || steady_stdev >= dstdev)
                 bcondition = true;
             else {
                 bcondition = areDeviationsInAllowedLimits(values, istart, iend, steady_stdev);
@@ -142,7 +142,7 @@ public class SCAlgorithms {
 
                         SpanPair sp = new SpanPair(istart, (iend != values.length ? --iend : iend));
                         periods.add(sp);
-                        
+
                         istart = iend;
                         iend += minelements;
                     }
@@ -157,7 +157,7 @@ public class SCAlgorithms {
 
         return periods;
     }
-    
+
     //-------------------------------------------------------------------------
     /**
      * Returns a number of possible steady-interval shifting (to the right) so that the new interval should be statistically better.
@@ -168,7 +168,7 @@ public class SCAlgorithms {
      * @param  istart (inclusive) lower index of the sub-array
      * @param  iend (exclusive) upper index of the sub-array
      * @param bRegressionAnalysis perform regression analysis if true
-     * @param  steady_stdev it will be considered that deviations are 
+     * @param  steady_stdev it will be considered that deviations are
      * in allowed limits if standard deviation is less then this predefined argument
      * @return int - Return a number of possible (and recommended) shifting to the right
      */
@@ -230,37 +230,36 @@ public class SCAlgorithms {
 
         // todo: throw here...
         ArrayList<SpanPair> periods_out = new ArrayList<>();
-        
+
         SpanPair in = periods_in.get(0);
         SpanPair out = new SpanPair(in.first, in.second);
         int num1 = out.second - out.first;
-        
-        
+
         for(int jj=1; jj<periods_in.size(); jj++) {
             SpanPair merging = periods_in.get(jj);
             double mean1 = SCStatistics.mean(values, out.first, out.second);
             double stdev1 = SCStatistics.stdev(values, out.first, out.second);
-            
+
             int num2 = merging.second - merging.first;
             double mean2 = SCStatistics.mean(values, merging.first, merging.second);
             double stdev2 = SCStatistics.stdev(values, merging.first, merging.second);
-            
+
             // todo: Fischer's test of dispersion equality
-            
+
             // big-interval standard deviation
             double stdev_big = SCStatistics.stdev(values, out.first, merging.second);
 
             // standard deviation of the difference of two mean values
             double stedev_diff = Math.sqrt(stdev1*stdev1/num1 + stdev2*stdev2/num2);
-            
+
             double dquantile_diff = SCStatistics.get99StudentQuantil(num1 + num2 - 2);
-                
+
             boolean cond = Math.abs(mean1 - mean2) / stedev_diff <= dquantile_diff;
-            
+
             if(cond) { // merge intervals
                 int numelements = merging.second - out.first;
                 double dquantile = SCStatistics.get99StudentQuantil(numelements - 2);
-                
+
                 int numdev = 0; // number of corrections beyond limits (d/md > quantile)
                 for(int kk=out.first; kk<merging.second; kk++) {
                     double dval = values[kk];
@@ -271,25 +270,25 @@ public class SCAlgorithms {
                         break;
                     }
                 }
-                
+
                 if(cond) {
                     out.second = merging.second;
                     if(periods_in.size()-1 == jj) // last steady interval in the input arraylist
                         periods_out.add(out);
-                    
+
                     continue;
                 }
             }
-            
+
             periods_out.add(out);
             out = new SpanPair(merging.first, merging.second);
             if(periods_in.size()-1 == jj) // last steady interval in the input arraylist
                 periods_out.add(out);
         }
-        
+
         return periods_out;
     }
-    
+
     //-------------------------------------------------------------------------
     /**
      * Intersects two lists of intervals (e.g. steady course and steady speed intervals).
@@ -336,17 +335,16 @@ public class SCAlgorithms {
      * Adjusts touching intervals so that the sum of squares of deviations should have a minimal possible value.
      * (Optionally, it can be checked whether the regression line is horizontal)
      * @param times the times in the examined period
-     * @param values the values being examined (headings or speeds) 
+     * @param values the values being examined (headings or speeds)
      * @param periods the array of steady course/speed intervals
      * @param minelements the minimal number of elements in a 'steady' interval
      * @param bRegressionAnalysis perform regression analysis if true
      * @param  steady_range it will be considered that interval is steady if its max and min values are in this predefined range
-     * @param  steady_stdev it will be considered that deviations are 
+     * @param  steady_stdev it will be considered that deviations are
      * in allowed limits if standard deviation is less then this predefined argument
      */
-    //public static ArrayList<SpanPair> merge_intervals(double[] values, ArrayList<SpanPair> periods_in) {
     public static void adjustTouchingIntervals(double[] times, double[] values, ArrayList<SpanPair> periods, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
-        
+
         // Iterate through the list, having in focus only neighboring intervals
         for(int ii=0, jj=1; jj<periods.size(); ii++, jj++) {
             SpanPair left = periods.get(ii);
@@ -358,7 +356,7 @@ public class SCAlgorithms {
 
             int touching_final = left.second;
             double minsumdev2 = Double.MAX_VALUE; // sum of squares of deviations - the crucial parameter
-            
+
             // Test all possible touching points between...
             for(int touching = left.first + minelements; touching <= right.second - minelements; touching++) {
 
@@ -404,12 +402,12 @@ public class SCAlgorithms {
 
         // Apply max-deviation + regression check algorithm
         ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = SCAlgorithms.fifo_mean_st_maxdev(times, values, 35, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
-        
+
         // Merge neighbourighing steady-speed intervals (those that pass statistical equal-means test)
         ArrayList<SCAlgorithms.SpanPair> speed_intervals = SCAlgorithms.merge_intervals(values, speed_intervals0);
 
         // Remove redundant intervals (peaks, holes). They all have non-homoggenous variance.
-        
+
         // Find them...
         ArrayList<SCStatistics.Variance> list = new ArrayList<>();
         for(int ii=0; ii<speed_intervals.size(); ii++) {
