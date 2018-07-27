@@ -327,6 +327,66 @@ public class SCAlgorithms {
 
     //-------------------------------------------------------------------------
     /**
+     * Adjusts touching intervals so that the sum of squares of deviations should have a minimal possible value.
+     * (Optionally, it can be checked whether the regression line is horizontal)
+     * @param times the times in the examined period
+     * @param values the values being examined (headings or speeds) 
+     * @param periods the array of steady course/speed intervals
+     * @param minelements the minimal number of elements in a 'steady' interval
+     * @param bRegressionAnalysis perform regression analysis if true
+     * @param  steady_range it will be considered that interval is steady if its max and min values are in this predefined range
+     * @param  steady_stdev it will be considered that deviations are 
+     * in allowed limits if standard deviation is less then this predefined argument
+     */
+    //public static ArrayList<SpanPair> merge_intervals(double[] values, ArrayList<SpanPair> periods_in) {
+    public static void adjustTouchingIntervals(double[] times, double[] values, ArrayList<SpanPair> periods, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
+        
+        // Iterate through the list, having in focus only neighboring intervals
+        for(int ii=0, jj=1; jj<periods.size(); ii++, jj++) {
+            SpanPair left = periods.get(ii);
+            SpanPair right = periods.get(jj);
+
+            // Treat only touching intervals
+            if(left.second != right.first)
+                continue;
+
+            int touching_final = left.second;
+            double minsumdev2 = Double.MAX_VALUE; // sum of squares of deviations - the crucial parameter
+            
+            // Test all possible touching points between...
+            for(int touching = left.first + minelements; touching <= right.second - minelements; touching++) {
+
+                // First, check whether deviations are in allowed limits
+                boolean cond_first_ok = areDeviationsInAllowedLimits(values, left.first, touching, steady_stdev);
+                if(!cond_first_ok) continue;
+                boolean cond_second_ok = areDeviationsInAllowedLimits(values, touching, right.second, steady_stdev);
+                if(!cond_second_ok) continue;
+
+                // Optionally, verify that the regression lines are horizontal
+                if(bRegressionAnalysis) {
+                    cond_first_ok &= isRegressionLineHorizontal(times, values, left.first, touching, steady_range);
+                    if(!cond_first_ok) continue;
+                    cond_second_ok &= isRegressionLineHorizontal(times, values, touching, right.second, steady_range);
+                    if(!cond_second_ok) continue;
+                }
+
+                // Is this is the optimal case, so far - remember it
+                double stdev_left = SCStatistics.stdev(values, left.first, touching);
+                double stdev_right = SCStatistics.stdev(values, touching, right.second);
+                double sumdev2 = stdev_left*(touching - left.first - 1) + stdev_right*(right.second - touching - 1);
+
+                if(sumdev2 < minsumdev2) {
+                    minsumdev2 = sumdev2;
+                    touching_final = touching;
+                }
+            }
+
+            left.second = right.first = touching_final;
+        }
+    }
+
+    //-------------------------------------------------------------------------
+    /**
      * Creates an array of steady-speed intervals from an input array of totes.
      * @param  totes given ArrayList of Tote objects
      * @return ArrayList< SpanPair > - array of steady-speed intervals extracted from totes
