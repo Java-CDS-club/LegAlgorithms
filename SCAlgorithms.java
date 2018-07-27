@@ -30,6 +30,7 @@ public class SCAlgorithms {
      * @return boolean - true if we can consider regression line horizontal
      */
     static boolean areDeviationsInAllowedLimits(double[] values, int istart, int iend, double steady_stdev) {
+
         final double dstdev = SCStatistics.stdev(values, istart, iend);
         if (dstdev < steady_stdev) // Preventing devzero errors
             return true;
@@ -58,6 +59,7 @@ public class SCAlgorithms {
      * @return boolean - true if we can consider regression line horizontal
      */
     static boolean isRegressionLineHorizontal(double[] times, double[] values, int istart, int iend, double steady_range) {
+
         SCStatistics.RegrResults res = SCStatistics.lregression(times, values, istart, iend);
         final int numelements = iend - istart;
         final double dstdev = SCStatistics.stdev(values, istart, iend);
@@ -94,6 +96,7 @@ public class SCAlgorithms {
      * todo it should be optimized. It can run significantly faster.
      */
     public static ArrayList<SpanPair> fifo_mean_st_maxdev(double[] times, double[] values, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
+
         if (times.length != values.length)
             throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_mean_st_maxdev - input arrays of different length");
 
@@ -170,6 +173,7 @@ public class SCAlgorithms {
      * @return int - Return a number of possible (and recommended) shifting to the right
      */
     public static int shiftIntervalRight(double[] times, double[] values, int istart, int iend, boolean bRegressionAnalysis, double steady_stdev) {
+
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.shiftIntervalRight - 'istart' index (" + istart + ") is less than 0.");
 
@@ -223,6 +227,7 @@ public class SCAlgorithms {
      * todo it should be optimized. It can run significantly faster.
      */
     public static ArrayList<SpanPair> merge_intervals(double[] values, ArrayList<SpanPair> periods_in) {
+
         // todo: throw here...
         ArrayList<SpanPair> periods_out = new ArrayList<>();
         
@@ -293,6 +298,7 @@ public class SCAlgorithms {
      * @return rrayList<SpanPair> - Returns new list of a combined/intersected intervals.
      */
     public static ArrayList<SpanPair> intersectLists(ArrayList<SpanPair> first, ArrayList<SpanPair> second) {
+
         ArrayList<SpanPair> intersection = new ArrayList<>();
 
         // examine and treat properly all the topological possibilities
@@ -433,6 +439,7 @@ public class SCAlgorithms {
      * @return ArrayList< SpanPair > - array of steady-course intervals extracted from totes
      */
     public static ArrayList<SpanPair> extractStaedyHeadings(ArrayList<Tote> totes) {
+
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getHeadings(totes);
 

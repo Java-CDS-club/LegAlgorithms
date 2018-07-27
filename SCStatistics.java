@@ -69,6 +69,7 @@ public class SCStatistics {
      * @return double[] - array of absolute times extracted from totes
      */
     public static double[] getTimes(ArrayList<Tote> totes, int istart, int iend) {
+
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.getTimes - 'istart' index (" + istart + ") is less than 0.");
 
@@ -105,6 +106,7 @@ public class SCStatistics {
      * @return double[] - array of absolute times extracted from totes
      */
     public static double[] getRelativeTimes(ArrayList<Tote> totes, int istart, int iend) {
+
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.getRelativeTimes - 'istart' index (" + istart + ") is less than 0.");
 
@@ -130,6 +132,7 @@ public class SCStatistics {
      * @return double[] - array of speeds extracted form totes
      */
     public static double[] getSpeeds(ArrayList<Tote> totes) {
+
         int index = 0;
         double[] da = new double[totes.size()];
         Iterator<Tote> iter = totes.iterator();
@@ -148,6 +151,7 @@ public class SCStatistics {
      * @return double[] - array of speeds extracted form totes
      */
     public static double[] getSpeeds(ArrayList<Tote> totes, int istart, int iend) {
+
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.getSpeeds - 'istart' index (" + istart + ") is less than 0.");
 
@@ -172,6 +176,7 @@ public class SCStatistics {
      * @return double[] - array of headings extracted form totes
      */
     public static double[] getHeadings(ArrayList<Tote> totes) {
+
         double[] dl = new double[totes.size()];
         int index = 0;
         Iterator<Tote> iter = totes.iterator();
@@ -190,6 +195,7 @@ public class SCStatistics {
      * @return double[] - array of headings extracted form totes
      */
     public static double[] getHeadings(ArrayList<Tote> totes, int istart, int iend) {
+
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.getHeadings - 'istart' index (" + istart + ") is less than 0.");
 
@@ -214,6 +220,7 @@ public class SCStatistics {
      * @return double - max value within the array
      */
     public static double max(double[] ardoubles) {
+
         double dmax = Double.MIN_VALUE;
         for (int ii=0; ii<ardoubles.length; ii++)
             dmax = Double.max(dmax, ardoubles[ii]);
@@ -228,6 +235,7 @@ public class SCStatistics {
      * @return double - min value within the array
      */
     public static double min(double[] ardoubles) {
+
         double dmin = Double.MAX_VALUE;
         for (int ii=0; ii<ardoubles.length; ii++)
                 dmin = Double.min(dmin, ardoubles[ii]);
@@ -244,6 +252,7 @@ public class SCStatistics {
      * @return double - max value within the array
      */
     public static double max(double[] ardoubles, int istart, int iend) {
+
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.max - 'istart' index (" + istart + ") is less than 0.");
 
@@ -266,6 +275,7 @@ public class SCStatistics {
      * @return double - min value within the array
      */
     public static double min(double[] ardoubles, int istart, int iend) {
+
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.min - 'istart' index (" + istart + ") is less than 0.");
 
@@ -286,6 +296,7 @@ public class SCStatistics {
      * @return double - mean value (calculated as simple arithmetic mean)
      */
     public static double mean(double[] ardoubles) {
+
         double dsum = 0.0;
         for (int ii=0; ii<ardoubles.length; ii++)
             dsum += ardoubles[ii];
@@ -302,6 +313,7 @@ public class SCStatistics {
      * @return double - mean value (calculated as simple arithmetic mean)
      */
     public static double mean(double[] ardoubles, int istart, int iend) {
+
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.mean - 'istart' index (" + istart + ") is less than 0.");
 
@@ -323,6 +335,7 @@ public class SCStatistics {
      * @return double - mean value (calculated as weighted arithmetic mean)
      */
     public static double weighted_mean(double[] ardoubles, double[] arweights){
+
         if (ardoubles.length != arweights.length)
             throw new IndexOutOfBoundsException("Calling ScStatistics.weighted_mean - arrays of different length");
         
@@ -343,6 +356,7 @@ public class SCStatistics {
      * @return double - standard deviation (calculated as simple arithmetic mean)
      */
     public static double stdev(double[] ardoubles) {
+
         double dmean = mean(ardoubles);
         double dsum_squares = 0.0;
         for (int ii=0; ii<ardoubles.length; ii++)
@@ -360,6 +374,7 @@ public class SCStatistics {
      * @return double - standard deviation (calculated as simple arithmetic mean)
      */
     public static double stdev(double[] ardoubles, int istart, int iend) {
+
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.stdev - 'istart' index (" + istart + ") is less than 0.");
 
@@ -383,6 +398,7 @@ public class SCStatistics {
      * @return double - standard deviation (calculated as simple arithmetic mean)
      */
     public static double stdev_mn(double[] ardoubles, double dmean) {
+
         double dsum_squares = 0.0;
         for (int ii=0; ii<ardoubles.length; ii++)
             dsum_squares += ardoubles[ii]*ardoubles[ii];
@@ -398,6 +414,7 @@ public class SCStatistics {
      * @return double - standard deviation (calculated as simple arithmetic mean)
      */
     public static double weighted_stdev(double[] ardoubles, double[] arweights) {
+
         if (ardoubles.length != arweights.length)
             throw new IndexOutOfBoundsException("Calling ScStatistics.weighted_mean - arrays of different length");
 	    
@@ -420,6 +437,7 @@ public class SCStatistics {
      * @see https://en.wikipedia.org/wiki/Student%27s_t-distribution
      */
     static double get95StudentQuantil(int inum) {
+
         if (inum < 1) 
             throw new IllegalArgumentException("Calling ScStatistics.get95StudentQuantil - number of elements leass than 1");
         
@@ -477,6 +495,7 @@ public class SCStatistics {
      * @return double - quantile of Student's distribution
      */
     static double get99StudentQuantil(int inum) {
+
         if (inum < 1) 
             throw new IllegalArgumentException("Calling ScStatistics.get99StudentQuantil - number of elements leass than 1");
         
@@ -534,6 +553,7 @@ public class SCStatistics {
      * @return double - quantile of Student's distribution
      */
     static double get999StudentQuantil(int inum) {
+
         if (inum < 1) 
             throw new IllegalArgumentException("Calling ScStatistics.get999StudentQuantil - number of elements leass than 1");
         
@@ -593,6 +613,7 @@ public class SCStatistics {
      * @return the list of isolated (bad) intervals. These intervals should be removed afterwards from the list of overall intervals.
      */
     public static ArrayList<Integer> isolateNonHomogeneous(ArrayList<Variance> _variances, double steady_stdev) {
+
     	ArrayList<Integer> indexes = new ArrayList<>();
     	
     	if(_variances.size() < 2)
@@ -669,6 +690,7 @@ public class SCStatistics {
      * @todo There are more precise and bigger tables. Implement one of them.
      */
     public static double get99FQuantile(int f1, int f2) {
+
         if (f1 < 1 || f2 < 1) 
             throw new IllegalArgumentException("Calling ScStatistics.get99F_DistributionQuantil - degrees of freedoms less than 1");
 
@@ -767,6 +789,7 @@ public class SCStatistics {
      * @todo There are more precise and bigger tables. Implement one of them.
      */
     public static double get999FQuantile(int f1, int f2) {
+
         if (f1 < 1 || f2 < 1) 
             throw new IllegalArgumentException("Calling ScStatistics.get99F_DistributionQuantil - degrees of freedoms less than 1");
 
@@ -868,6 +891,7 @@ public class SCStatistics {
      * @return  double - the interpolated (i.e. the estimated) value
      */
     static double linterpolation(double z1, double z2, double dx1, double dx2) {
+
         return (dx1*z2 + dx2*z1) / (dx1 + dx2);
     }
 
@@ -911,6 +935,7 @@ public class SCStatistics {
      * @return  double - the interpolated (i.e. the estimated) value of the (X,Y) point
      */
     static double bilinterpolation(double z11, double z12, double z21, double z22, double dx1, double dx2, double dy1, double dy2) {
+
         double fx1 = dx2;
         double fx2 = dx1;
         double fy1 = dy2;
@@ -934,6 +959,7 @@ public class SCStatistics {
      * @return double - max value within the array
      */
     public static RegrResults lregression(double[] x, double[] y, int istart, int iend) {
+
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.lregression - 'istart' index (" + istart + ") is less than 0.");
 
@@ -950,12 +976,12 @@ public class SCStatistics {
         
         // find out the estimated values of basic linear regression parameters (a, b)
         int num = iend - istart;	// number of elements in the arrays
-        double N11 = 0.0;			// sum(x*x)
-        double N12 = 0.0;                       // sum(x)
-        double N22 = num;                       // 
+        double N11 = 0.0;           // sum(x*x)
+        double N12 = 0.0;           // sum(x)
+        double N22 = num;
         
-        double n1 = 0.0;                        // -sum(x*y)
-        double n2 = 0.0;                        // -sum(y)
+        double n1 = 0.0;            // -sum(x*y)
+        double n2 = 0.0;            // -sum(y)
         
         for(int ii=istart; ii<iend; ii++) {
             N11 += x[ii] * x[ii];
