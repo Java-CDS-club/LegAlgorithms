@@ -703,7 +703,8 @@ public class SCStatistics {
         if(num <= 20)
             return rangeTable[num-2];
         
-        else if(num <= 60)
+        // linear interpolation
+	else if(num <= 60)
             return linterpolation(rangeTable[18], rangeTable[19], (num-20), (60-num));
 
         else if(num <= 100)
