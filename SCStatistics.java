@@ -681,6 +681,47 @@ public class SCStatistics {
     
     //-------------------------------------------------------------------------
     /**
+     * Returns quantile of ranges (normal Gaussian distribution) with the 99% confidence interval
+     * @param num number of elements
+     * @return double - the resulting quantile
+     */
+    public static double get99RangeQuantile(int num) {
+    	
+        if (num < 2) 
+            throw new IllegalArgumentException("Calling ScStatistics.get99FQuantil - degrees of freedoms less than 1");
+
+        // The table has been created applying the Monte-Carlo method with 1e6 repeats. (The code can be exposed, if needed)
+        double[] rangeTable = {
+// num =    2       3       4       5       6       7       8       9       10      11      12      13      14      15
+           3.886,  4.346,  4.621,  4.815,  4.965,  5.087,  5.188,  5.277,  5.354,  5.422,  5.484,  5.540,  5.591,  5.638,
+           
+// num =    16      17      18      19      20      60      100     200     350     500
+           5.682,  5.723,  5.761,  5.797,  5.831,  6.509,  6.801,  7.178,  7.470,  7.650
+        };
+
+        // taking from the table directly
+        if(num <= 20)
+            return rangeTable[num-2];
+        
+        else if(num <= 60)
+            return linterpolation(rangeTable[18], rangeTable[19], (num-20), (60-num));
+
+        else if(num <= 100)
+            return linterpolation(rangeTable[19], rangeTable[20], (num-60), (100-num));
+
+        else if(num <= 200)
+            return linterpolation(rangeTable[20], rangeTable[21], (num-100), (200-num));
+
+        else if(num <= 350)
+            return linterpolation(rangeTable[21], rangeTable[22], (num-200), (350-num));
+
+        else
+            return linterpolation(rangeTable[22], rangeTable[23], (num-350), (500-num));
+
+    }
+
+    //-------------------------------------------------------------------------
+    /**
      * Returns quantile of F-distribution with the 99% confidence interval
      * @param  f1 numerator degrees of freedom
      * @param  f2 denominator degrees of freedom
