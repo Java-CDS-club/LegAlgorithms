@@ -405,18 +405,15 @@ public class SCAlgorithms {
         double[] values = SCStatistics.getSpeeds(totes);
 
         // Apply max-deviation + regression check algorithm
-        ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = SCAlgorithms.fifo_mean_st_maxdev(times, values, 35, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
+        ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_mean_st_maxdev(times, values, 35, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
 
-        // Merge neighbourighing steady-speed intervals (those that pass statistical equal-means test)
-        ArrayList<SCAlgorithms.SpanPair> speed_intervals = SCAlgorithms.merge_intervals(values, speed_intervals0);
-
-        // Remove redundant intervals (peaks, holes). They all have non-homoggenous variance.
+        // Remove redundant intervals (peaks, holes). They all have non-homogeneous variance.
 
         // Find them...
         ArrayList<SCStatistics.Variance> list = new ArrayList<>();
-        for(int ii=0; ii<speed_intervals.size(); ii++) {
-            int index_start = speed_intervals.get(ii).first;
-            int index_end = speed_intervals.get(ii).second;
+        for(int ii=0; ii<speed_intervals0.size(); ii++) {
+            int index_start = speed_intervals0.get(ii).first;
+            int index_end = speed_intervals0.get(ii).second;
             int numelements = index_end - index_start;
             double dstdev = SCStatistics.stdev(values, index_start, index_end);
             list.add(new SCStatistics.Variance(ii, numelements-1,  dstdev*dstdev));
@@ -428,10 +425,13 @@ public class SCAlgorithms {
         Collections.sort(_4remove);
         for(int jj = _4remove.size()-1; jj >= 0; jj--) {
             Integer myint = _4remove.get(jj);
-            speed_intervals.remove(myint.intValue());
+            speed_intervals0.remove(myint.intValue());
         }
 
-        return speed_intervals;
+        // Merge neighboring steady-speed intervals (those that pass statistical equal-means test)
+        ArrayList<SCAlgorithms.SpanPair> speed_intervals2 = merge_intervals(values, speed_intervals0);
+
+        return speed_intervals2;
     }
 
     //-------------------------------------------------------------------------
