@@ -170,10 +170,9 @@ public class SCAlgorithms {
      * @param bRegressionAnalysis perform regression analysis if true
      * @param  steady_stdev it will be considered that deviations are
      * in allowed limits if standard deviation is less then this predefined argument
-     * @return int - Return a number of possible (and recommended) shifting to the right
+     * @return boolean - true if (deviations) interval should be shifted
      */
-    public static int shiftIntervalRight(double[] times, double[] values, int istart, int iend, boolean bRegressionAnalysis, double steady_stdev) {
-
+    public static boolean shiftDevIntervalRight(double[] times, double[] values, int istart, int iend, boolean bRegressionAnalysis, double steady_stdev) {
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.shiftIntervalRight - 'istart' index (" + istart + ") is less than 0.");
 
@@ -183,40 +182,44 @@ public class SCAlgorithms {
         if (times.length != values.length)
             throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_mean_st_maxdev - input arrays of different length");
 
-        if (iend > values.length - 1)
-            return 0;
+        if (iend >= values.length - 1)
+            return false;
+
+        // start,end of right shifted interval
+        int istartnew = istart + 1;
+        int iendnew = iend + 1;
 
         // next interval is not proper if it doesn't fulfill the basic condition
-        if(!areDeviationsInAllowedLimits(values, istart+1, iend+1, steady_stdev))
-            return 0;
+        if(!areDeviationsInAllowedLimits(values, istartnew, iendnew, steady_stdev))
+            return false;
 
         int numelements = iend - istart;
         double stdev_old = SCStatistics.stdev(values, istart, iend);
 
         // shifted aray
-        double stdev_new = SCStatistics.stdev(values, istart+1, iend+1);
+        double stdev_new = SCStatistics.stdev(values, istartnew, iendnew);
         if(stdev_new >= stdev_old)
-            return 0;
+            return false;
 
         if(bRegressionAnalysis) {
-            double dmax = SCStatistics.max(values, istart, iend);
-            double dmin = SCStatistics.min(values, istart, iend);
+            double dmax = SCStatistics.max(values, istartnew, iendnew);
+            double dmin = SCStatistics.min(values, istartnew, iendnew);
             if (dmax - dmin > 0.1) { // no need to analyze regression of the next interval if all the values in array are within 0.01 range
-                SCStatistics.RegrResults res = SCStatistics.lregression(times, values, istart+1, iend+1);
+                SCStatistics.RegrResults res = SCStatistics.lregression(times, values, istartnew, iendnew);
                 double dtest = Math.abs(res.a / res.ma);
                 double dquantile = numelements > 2 ? SCStatistics.get999StudentQuantil(numelements - 2) : SCStatistics.get999StudentQuantil(1) ;
-                double regression_grow = Math.abs(res.a * (times[iend] - times[istart+1]));
+                double regression_grow = Math.abs(res.a * (times[iend] - times[istart+1])); // iend (not iendnew). The end of intervals are always exclusive.
                 boolean bcond = (regression_grow <= stdev_new || dtest <= dquantile);
-                if(!bcond) { // no shift if the next interval regression line is more inclined
+                if(bcond) { // no shift if the next interval regression line is more inclined
                     SCStatistics.RegrResults res0 = SCStatistics.lregression(times, values, istart, iend);
                     if(Math.abs(res0.a) < Math.abs(res.a))
-                        return 0;
+                        return false;
                 }
             }
         }
 
-        // the steady interval should be shifted for 1 or even more (recursive call)
-        return 1 + shiftIntervalRight(times, values, istart+1, iend+1, bRegressionAnalysis, steady_stdev);
+        // If we came here, the interval should be shifted
+        return true;
     }
 
     //-------------------------------------------------------------------------
