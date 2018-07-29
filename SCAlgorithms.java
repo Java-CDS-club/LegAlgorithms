@@ -48,6 +48,32 @@ public class SCAlgorithms {
 
     //-------------------------------------------------------------------------
     /**
+     * Returns true if the maximal range in an interval is within the statistically allowed limits.
+     * Test value (max(x)-min(x))/sigma(x) should be less then corresponding quantile
+     * @param  values the array of values
+     * @param  istart (inclusive) lower index of the sub-array
+     * @param  iend (exclusive) upper index of the sub-array
+     * @param  steady_stdev it will be considered that deviations are
+     * in allowed limits if standard deviation is less then this predefined argument
+     * @return boolean - true if maximal range is in the allowed limits
+     */
+    static boolean isMaxRangeInAllowedLimits(double[] values, int istart, int iend, double steady_stdev) {
+
+        final double dstdev = SCStatistics.stdev(values, istart, iend);
+        if (dstdev < steady_stdev) // Preventing devzero errors
+            return true;
+
+        final int numelements = iend - istart;
+        final double dmax = SCStatistics.max(values, istart, iend);
+        final double dmin = SCStatistics.min(values, istart, iend);
+        final double dtest = (dmax - dmin) / Math.sqrt(2 * dstdev);
+        final double dquantile = SCStatistics.get99RangeQuantile(numelements);
+
+        return dtest <= dquantile;
+    }
+
+    //-------------------------------------------------------------------------
+    /**
      * Returns true if we can consider regression line horizontal
      * (regression analysis: hypothesis |a| > 0 is tested; alternative hypothesis is a = 0
      * test value (a-0)/sigma(a) has Student(0,1) distribution with n-2 degrees of freedom)
