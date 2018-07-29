@@ -404,6 +404,8 @@ public class SCAlgorithms {
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getSpeeds(totes);
 
+        int minelements = 35;
+
         // Apply max-deviation + regression check algorithm
         ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_mean_st_maxdev(times, values, 35, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
 
@@ -428,11 +430,11 @@ public class SCAlgorithms {
             speed_intervals0.remove(myint.intValue());
         }
 
+        // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
+        adjustTouchingIntervals(times, values, speed_intervals0, minelements, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
+
         // Merge neighboring steady-speed intervals (those that pass statistical equal-means test)
         ArrayList<SCAlgorithms.SpanPair> speed_intervals2 = merge_intervals(values, speed_intervals0);
-
-        // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
-        adjustTouchingIntervals(times, values, speed_intervals2, minelements, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
 
         return speed_intervals2;
     }
@@ -448,16 +450,18 @@ public class SCAlgorithms {
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getHeadings(totes);
 
-        // Apply max-deviation + regression check algorithm
-        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = SCAlgorithms.fifo_mean_st_maxdev(times, values, 35, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
+        int minelements = 35;
 
-        // Merge neighbourighing steady-course intervals (those that pass statistical equal-means test)
-        ArrayList<SCAlgorithms.SpanPair> course_intervals = SCAlgorithms.merge_intervals(values, course_intervals0);
+        // Apply max-deviation + regression check algorithm
+        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_mean_st_maxdev(times, values, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
-        adjustTouchingIntervals(times, values, course_intervals1, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
+        adjustTouchingIntervals(times, values, course_intervals0, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
-        return course_intervals;
+        // Merge neighboring steady-course intervals (those that pass statistical equal-means test)
+        ArrayList<SCAlgorithms.SpanPair> course_intervals1 = merge_intervals(values, course_intervals0);
+
+        return course_intervals1;
     }
 
 }
