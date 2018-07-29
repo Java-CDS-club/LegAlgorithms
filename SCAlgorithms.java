@@ -131,14 +131,15 @@ public class SCAlgorithms {
                     // Is horizontal line - linear regressiona analysis. If not, iterate backward until finding horizontal line.
                     if(bRegressionAnalysis) {
                         do {
-                            cond_regression = isRegressionLineHorizontal(times, values, istart, iend, steady_range);
+                            cond_regression = isRegressionLineHorizontal(times, values, istart, iend-1, steady_range);
                             } while (!cond_regression && iend-- > istart + minelements);
                         }
 
                     if(!bRegressionAnalysis || cond_regression) {
-                        int ishift = shiftIntervalRight(times, values, istart, iend, bRegressionAnalysis, steady_stdev);
-                        istart += ishift;
-                        iend += ishift;
+                        if(shiftDevIntervalRight(times, values, istart, iend-1, bRegressionAnalysis, steady_stdev)) {
+                            istart++;
+                            continue;
+                        }
 
                         SpanPair sp = new SpanPair(istart, (iend != values.length ? --iend : iend));
                         periods.add(sp);
