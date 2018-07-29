@@ -431,6 +431,9 @@ public class SCAlgorithms {
         // Merge neighboring steady-speed intervals (those that pass statistical equal-means test)
         ArrayList<SCAlgorithms.SpanPair> speed_intervals2 = merge_intervals(values, speed_intervals0);
 
+        // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
+        adjustTouchingIntervals(times, values, speed_intervals2, minelements, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
+
         return speed_intervals2;
     }
 
@@ -450,6 +453,9 @@ public class SCAlgorithms {
 
         // Merge neighbourighing steady-course intervals (those that pass statistical equal-means test)
         ArrayList<SCAlgorithms.SpanPair> course_intervals = SCAlgorithms.merge_intervals(values, course_intervals0);
+
+        // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
+        adjustTouchingIntervals(times, values, course_intervals1, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
         return course_intervals;
     }
