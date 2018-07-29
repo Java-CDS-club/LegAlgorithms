@@ -49,7 +49,7 @@ public class SCAlgorithms {
     //-------------------------------------------------------------------------
     /**
      * Returns true if the maximal range in an interval is within the statistically allowed limits.
-     * Test value (max(x)-min(x))/sigma(x) should be less then corresponding quantile
+     * Test value (max(x)-min(x))/sigma(range) should be less then corresponding quantile
      * @param  values the array of values
      * @param  istart (inclusive) lower index of the sub-array
      * @param  iend (exclusive) upper index of the sub-array
