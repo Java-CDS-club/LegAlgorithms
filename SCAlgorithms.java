@@ -316,11 +316,12 @@ public class SCAlgorithms {
     //-------------------------------------------------------------------------
     /**
      * Merge intervals which can be considered same (the same mean, in statistical sense)
+     * Criterion that has to be fulfilled - all the deviations (in the merged interval) have to be within allowed limits
      * @param  values the array of values
      * @param  periods_in the array of steady course/speed intervals
      * todo it should be optimized. It can run significantly faster.
      */
-    public static ArrayList<SpanPair> merge_intervals(double[] values, ArrayList<SpanPair> periods_in) {
+    public static ArrayList<SpanPair> mergeDevIntervals(double[] values, ArrayList<SpanPair> periods_in) {
 
         // todo: throw here...
         ArrayList<SpanPair> periods_out = new ArrayList<>();
@@ -372,6 +373,54 @@ public class SCAlgorithms {
 
                     continue;
                 }
+            }
+
+            periods_out.add(out);
+            out = new SpanPair(merging.first, merging.second);
+            if(periods_in.size()-1 == jj) // last steady interval in the input arraylist
+                periods_out.add(out);
+        }
+
+        return periods_out;
+    }
+
+    //-------------------------------------------------------------------------
+    /**
+     * Merge intervals which can be considered same (the same mean, in statistical sense)
+     * Criterion that has to be fulfilled - the maximal range (in merged interval) has to be within allowed limits
+     * @param  values the array of values
+     * @param  periods_in the array of steady course/speed intervals
+     * todo it should be optimized. It can run significantly faster
+     */
+    public static ArrayList<SpanPair> mergeRangeIntervals(double[] values, ArrayList<SpanPair> periods_in) {
+        // todo: throw here...
+        ArrayList<SpanPair> periods_out = new ArrayList<>();
+
+        SpanPair in = periods_in.get(0);
+        SpanPair out = new SpanPair(in.first, in.second);
+        //int num1 = out.second - out.first;
+
+        for(int jj=1; jj<periods_in.size(); jj++) {
+            SpanPair merging = periods_in.get(jj);
+
+            // todo: Fischer's test of dispersion equality
+
+            // big-interval standard deviation
+            final double stdev_big = SCStatistics.stdev(values, out.first, merging.second);
+            final double max_big = SCStatistics.max(values, out.first, merging.second);
+            final double min_big = SCStatistics.min(values, out.first, merging.second);
+
+            final double dtest = (max_big - min_big) / Math.sqrt(stdev_big);
+            final double dquantile = SCStatistics.get99RangeQuantile(merging.second - merging.first);
+
+            boolean cond = (dtest <= dquantile); // = Math.abs(mean1 - mean2) / stedev_diff <= dquantile_diff;
+
+            if(cond) {
+                out.second = merging.second;
+                if(periods_in.size()-1 == jj) // last steady interval in the input arraylist
+                    periods_out.add(out);
+
+                continue;
             }
 
             periods_out.add(out);
