@@ -66,7 +66,7 @@ public class SCAlgorithms {
         final int numelements = iend - istart;
         final double dmax = SCStatistics.max(values, istart, iend);
         final double dmin = SCStatistics.min(values, istart, iend);
-        final double dtest = (dmax - dmin) / Math.sqrt(2 * dstdev);
+        final double dtest = (dmax - dmin) / Math.sqrt(dstdev);
         final double dquantile = SCStatistics.get99RangeQuantile(numelements);
 
         return dtest <= dquantile;
