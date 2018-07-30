@@ -711,10 +711,10 @@ public class SCAlgorithms {
         }
 
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
-        adjustTouchingIntervals(times, values, speed_intervals0, minelements, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
+        adjustDevTouchingIntervals(times, values, speed_intervals0, minelements, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
 
         // Merge neighboring steady-speed intervals (those that pass statistical equal-means test)
-        ArrayList<SCAlgorithms.SpanPair> speed_intervals2 = merge_intervals(values, speed_intervals0);
+        ArrayList<SCAlgorithms.SpanPair> speed_intervals2 = mergeDevIntervals(values, speed_intervals0);
 
         return speed_intervals2;
     }
@@ -733,13 +733,13 @@ public class SCAlgorithms {
         int minelements = 35;
 
         // Apply max-deviation + regression check algorithm
-        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_mean_st_maxdev(times, values, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
+        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_maxrange(times, values, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
-        adjustTouchingIntervals(times, values, course_intervals0, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
+        adjustRangeTouchingIntervals(times, values, course_intervals0, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
         // Merge neighboring steady-course intervals (those that pass statistical equal-means test)
-        ArrayList<SCAlgorithms.SpanPair> course_intervals1 = merge_intervals(values, course_intervals0);
+        ArrayList<SCAlgorithms.SpanPair> course_intervals1 = mergeRangeIntervals(values, course_intervals0);
 
         return course_intervals1;
     }
