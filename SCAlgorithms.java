@@ -413,7 +413,7 @@ public class SCAlgorithms {
             final double dtest = (max_big - min_big) / Math.sqrt(stdev_big);
             final double dquantile = SCStatistics.get99RangeQuantile(merging.second - merging.first);
 
-            boolean cond = (dtest <= dquantile); // = Math.abs(mean1 - mean2) / stedev_diff <= dquantile_diff;
+            boolean cond = (dtest <= dquantile);
 
             if(cond) {
                 out.second = merging.second;
@@ -590,7 +590,6 @@ public class SCAlgorithms {
                 }
             }
 
-            if(left.second != touching_final) System.out.println("adjusted touching intervals  (" + left.first + "," + left.second + ")-(" + right.first + "," + right.second + ") -> (" + left.first + "," + touching_final + ")-(" + touching_final + "," + right.second + ")");
             left.second = right.first = touching_final;
         }
     }
