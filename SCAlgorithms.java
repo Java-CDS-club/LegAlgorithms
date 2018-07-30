@@ -187,6 +187,86 @@ public class SCAlgorithms {
 
     //-------------------------------------------------------------------------
     /**
+     * Creates an array of steady value (course or speed) intervals from an
+     * array of input values. Based on statistics and calculated allowed ranges. The maximal range is compared to the test statistics.
+     * Optionally - the inclination of regression line is analyzed afterwards.
+     * @param  times the array of times
+     * @param  values the array of values
+     * @param minelements the minimal number of elements in the 'steady' interval
+     * @param bRegressionAnalysis perform regression analysis if true
+     * @param  steady_range it will be considered that interval is steady if its max and min valueas are in this predefined range
+     * @param  steady_stdev it will be considered that interval is steady if standard deviation is less then this predefined argument
+     * @return ArrayList< SpanPair > - array of steady intervals extracted from totes
+     * todo min_elapsedtime instead of minelements
+     * todo it should be optimized. It can run significantly faster.
+     */
+    public static ArrayList<SpanPair> fifo_maxrange(double[] times, double[] values, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
+        if (times.length != values.length)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_mean_st_maxdev - input arrays of different length");
+
+        ArrayList<SpanPair> periods = new ArrayList<>();
+
+        int istart=0;
+        int iend = istart + minelements;
+
+        while ((istart <= values.length - minelements) && (iend <= values.length)) {
+            boolean bcondition;
+            final double dmax = SCStatistics.max(values, istart, iend);
+            final double dmin = SCStatistics.min(values, istart, iend);
+            final double dstdev = SCStatistics.stdev(values, istart, iend);
+
+            // if all the values are in the predefined small range or
+            // if they deviate within the numbers precision (2 decimals, here)
+            // we can drop out calculations and consider it to be steady course/speed interval
+            if (steady_range >= (dmax - dmin) || steady_stdev >= dstdev)
+                bcondition = true;
+            else {
+                bcondition = isMaxRangeInAllowedLimits(values, istart, iend, steady_stdev);
+            }
+
+            if(!bcondition || values.length == iend) {
+
+                if(iend - istart == minelements) // if no success; if no steady interval at the very beginning - then, iterate forward
+                    iend = ++istart + minelements;
+
+                else {
+                    boolean cond_regression = bRegressionAnalysis ? true : false;
+
+                    // Is horizontal line - linear regression analysis. If not, iterate backward until finding horizontal line.
+                    if(bRegressionAnalysis) {
+                        do {
+                            cond_regression = isRegressionLineHorizontal(times, values, istart, iend, steady_range);
+                           } while (!cond_regression && iend-- > istart + minelements);
+                        }
+
+                    if(!bRegressionAnalysis || cond_regression) {
+                        boolean bshift = shiftRangeIntervalRight(times, values, istart, iend, bRegressionAnalysis, steady_stdev);
+                        if(bshift) {
+                            System.out.println("dev-shifted: " + istart + " - " + iend + "  (" + (iend-istart) + ")");
+                            istart++;
+                            continue;
+                        }
+
+                        SpanPair sp = new SpanPair(istart, (iend != values.length ? --iend : iend));
+                        periods.add(sp);
+
+                        istart = iend;
+                        iend += minelements;
+                    }
+                    else // if no interval passed regression test - iterate forward
+                        iend = ++istart + minelements;
+                }
+
+            }
+            else
+                iend++;
+        }
+
+        return periods;
+    }
+
+    //-------------------------------------------------------------------------
+    /**
      * Returns a number of possible steady-interval shifting (to the right) so that the new interval should be statistically better.
      * (Example: the initial interval [5,15) is statistically good; [5,16) is bad; [6,16) is good and even better
      * than [5,15) - it is recommendable to shift the initial steady interval to the right for 1)
