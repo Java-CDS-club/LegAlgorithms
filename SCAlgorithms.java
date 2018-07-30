@@ -251,6 +251,70 @@ public class SCAlgorithms {
 
     //-------------------------------------------------------------------------
     /**
+     * Returns a number of possible steady-interval shifting (to the right) so that the new interval should be statistically better (satisfying maximal range condition).
+     * (Example: the initial interval [5,15) is statistically good; [5,16) is bad; [6,16) is good and even better
+     * than [5,15) - it is recommendable to shift the initial steady interval to the right for 1)
+     * @param  times the array of times
+     * @param  values the array of values
+     * @param  istart (inclusive) lower index of the sub-array
+     * @param  iend (exclusive) upper index of the sub-array
+     * @param bRegressionAnalysis perform regression analysis if true
+     * @param  steady_stdev it will be considered that deviations are
+     * in allowed limits if standard deviation is less then this predefined argument
+     * @return int - Return a number of possible (and recommended) shifting to the right
+     */
+    public static boolean shiftRangeIntervalRight(double[] times, double[] values, int istart, int iend, boolean bRegressionAnalysis, double steady_stdev) {
+        if (0 > istart)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.shiftIntervalRight - 'istart' index (" + istart + ") is less than 0.");
+
+        if (istart > iend)
+            throw new NegativeArraySizeException("Calling ScStatistics.shiftIntervalRight - 'istart' (" + istart + ") is bigger than 'iend' (" + iend + ").");
+
+        if (times.length != values.length)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_mean_st_maxdev - input arrays of different length");
+
+        if (iend > values.length - 1)
+            return false;
+
+        // start,end of right shifted interval
+        int istartnew = istart + 1;
+        int iendnew = iend + 1;
+
+        // next interval is not proper if it doesn't fulfill the basic condition
+        if(!isMaxRangeInAllowedLimits(values, istartnew, iendnew, steady_stdev))
+            return false;
+
+        int numelements = iend - istart;
+        double stdev_old = SCStatistics.stdev(values, istart, iend);
+
+        // shifted aray
+        double stdev_new = SCStatistics.stdev(values, istartnew, iendnew);
+        if(stdev_new >= stdev_old)
+            return false;
+
+        if(bRegressionAnalysis) {
+            double dmax = SCStatistics.max(values, istartnew, iendnew);
+            double dmin = SCStatistics.min(values, istartnew, iendnew);
+            if (dmax - dmin > 0.1) { // no need to analyze regression of the next interval if all the values in array are within 0.01 range
+                SCStatistics.RegrResults res = SCStatistics.lregression(times, values, istartnew, iendnew);
+                double dtest = Math.abs(res.a / res.ma);
+                double dquantile = numelements > 2 ? SCStatistics.get999StudentQuantil(numelements - 2) : SCStatistics.get999StudentQuantil(1) ;
+                double regression_grow = Math.abs(res.a * (times[iendnew] - times[istartnew]));
+                boolean bcond = (regression_grow <= stdev_new || dtest <= dquantile);
+                if(bcond) { // no shift if the next interval regression line is more inclined
+                    SCStatistics.RegrResults res0 = SCStatistics.lregression(times, values, istart, iend);
+                    if(Math.abs(res0.a) < Math.abs(res.a))
+                        return false;
+                }
+            }
+        }
+
+        // If we came here, the interval should be shifted
+        return true;
+    }
+
+    //-------------------------------------------------------------------------
+    /**
      * Merge intervals which can be considered same (the same mean, in statistical sense)
      * @param  values the array of values
      * @param  periods_in the array of steady course/speed intervals
