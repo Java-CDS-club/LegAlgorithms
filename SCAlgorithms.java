@@ -242,7 +242,6 @@ public class SCAlgorithms {
                     if(!bRegressionAnalysis || cond_regression) {
                         boolean bshift = shiftRangeIntervalRight(times, values, istart, iend, bRegressionAnalysis, steady_stdev);
                         if(bshift) {
-                            System.out.println("dev-shifted: " + istart + " - " + iend + "  (" + (iend-istart) + ")");
                             istart++;
                             continue;
                         }
