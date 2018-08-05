@@ -265,6 +265,81 @@ public class SCAlgorithms {
     }
 
     //-------------------------------------------------------------------------
+    public static void sieve_maxdev(ArrayList<SpanPair> spans, 
+                                    double[] times, double[] values, 
+                                    int istart, int iend,
+                                    double minseconds,
+                                    boolean bRegressionAnalysis, 
+                                    double steady_range, double steady_stdev,
+                                    int ff, double mm2) {
+
+        int minelements = 3; // it is expected that min-time period will never be less than three elements
+
+        int numelements = iend - istart;  
+        while(numelements >= minelements) {
+            SpanPair nsp = new SpanPair(0,0);
+            double stdevmin = Double.MAX_VALUE;
+            for(int ii = istart, jj = istart + numelements; jj<=iend; ii++, jj++) {
+                double dtime = times[jj-1] - times[ii];
+                if(dtime < minseconds) 
+                    continue;
+                
+                // testing deviations
+                boolean bcond = areDeviationsInAllowedLimits(values, ii, jj, steady_stdev);
+
+                // testing whether the variances are compatible (F-test)
+                if (bcond) {
+                    double dstdev2 = SCStatistics.stdev(values, ii, jj);
+                    double test = dstdev2*dstdev2 / mm2;
+                    double quantile = SCStatistics.get999FQuantile((jj - ii - 1), ff);
+                    bcond = (test <= quantile);
+                }
+
+                // testing whether the regression line is horizontal
+                if (bcond)
+                    bcond = isRegressionLineHorizontal(times, values, ii, jj, steady_range);
+
+                // If an interval has just been found and if it is the best one, so far - remember it 
+                // (the optimization - the best interval (i.e. stdev = min) is being searched)
+                if(bcond) {
+                    double stdev = SCStatistics.stdev(values, ii, jj);
+                    if (stdev < stdevmin) {
+                        stdevmin = stdev;
+                        nsp.first = ii;
+                        nsp.second = jj;
+                    }                    
+                }
+            }
+
+            // If there is an (optimal) interval satisfying the conditions,
+            // add it and make recursive calls for right and left subintervals
+            if(nsp.second != 0) {
+                sieve_maxdev(spans, times, values, 
+                             istart, nsp.first,
+                             minseconds, 
+                             bRegressionAnalysis, 
+                             steady_range, steady_stdev,
+                             ff, mm2);
+
+                System.out.println("adding: [" + nsp.first + ", " + nsp.second + ")");
+                spans.add(new SpanPair(nsp.first, nsp.second));
+
+                sieve_maxdev(spans, times, values, 
+                             nsp.second, iend,
+                             minseconds, 
+                             bRegressionAnalysis, 
+                             steady_range, steady_stdev,
+                             ff, mm2);
+
+                return;
+            }
+                
+            // if we came here, it means that no good interval has been found
+            numelements--;
+        }
+    }
+
+    //-------------------------------------------------------------------------
     /**
      * Returns a number of possible steady-interval shifting (to the right) so that the new interval should be statistically better.
      * (Example: the initial interval [5,15) is statistically good; [5,16) is bad; [6,16) is good and even better
