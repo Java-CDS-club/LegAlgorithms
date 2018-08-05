@@ -265,6 +265,20 @@ public class SCAlgorithms {
     }
 
     //-------------------------------------------------------------------------
+    /**
+     * Creates an array of steady value (course or speed) intervals from an
+     * array of input values. The function produce optimal intervals: 
+     * a) the sum of lengths is maximal b) the sum of squares of residuals is minimal.
+     * @param times the array of times
+     * @param values the array of values
+     * @param minseconds the resulting interval have to be greater than minseconds
+     * @param bRegressionAnalysis perform regression analysis if true
+     * @param steady_range it will be considered that interval is steady if its max and min valueas are in this predefined range
+     * @param steady_stdev it will be considered that interval is steady if standard deviation is less then this predefined argument
+     * @param ff referent degrees of freedom for the F-test used in sieve-algorithm
+     * @param mm2 referent variance for the F-test used in sieve-algorithm
+     * todo it should be optimized. It can run significantly faster.
+     */
     public static void sieve_maxdev(ArrayList<SpanPair> spans, 
                                     double[] times, double[] values, 
                                     int istart, int iend,
