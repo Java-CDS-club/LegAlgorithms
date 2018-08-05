@@ -54,7 +54,7 @@ public class SCStatistics {
     /**
      * Creates a double array of time values from an ArrayList of totes
      * @param  totes given ArrayList of Tote objects
-     * @return double[] - array of speeds extracted from totes
+     * @return double[] - array of absolute times extracted from totes
      */
     public static double[] getTimes(ArrayList<Tote> totes) {
         return getTimes(totes, 0, totes.size());
@@ -91,7 +91,7 @@ public class SCStatistics {
     /**
      * Creates a double array of relative time values from an ArrayList of totes within the given indexes. The values are relative to the first time in list i.e the elapsed times from totes[istart] are recorded.
      * @param  totes given ArrayList of Tote objects
-     * @return double[] - array of speeds extracted from totes
+     * @return double[] - array of relative times extracted from totes
      */
     public static double[] getRelativeTimes(ArrayList<Tote> totes) {
         return getRelativeTimes(totes, 0, totes.size());
@@ -103,7 +103,7 @@ public class SCStatistics {
      * @param  totes given ArrayList of Tote objects
      * @param  istart (inclusive) lower index of the totes-array segment extracted for calculation
      * @param  iend (exclusive) upper index of the totes-array segment extracted for calculation
-     * @return double[] - array of absolute times extracted from totes
+     * @return double[] - array of relative times extracted from totes
      */
     public static double[] getRelativeTimes(ArrayList<Tote> totes, int istart, int iend) {
 
