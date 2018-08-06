@@ -606,36 +606,51 @@ public class SCStatistics {
     
     //-------------------------------------------------------------------------
     /**
-     * Returns an array of indexes of redundant intervals (filtered out because of non-homogeneous variance). Equal range variance statistical test.  
-     * @param  _variances the array of Variance structures
+     * This function filters out an array of steady-values intervals (filtered out because of non-homogeneous variance). Equal range variance statistical test.  
+     * @param intervals intervals of steady values (heading or speeds) for analyzing. 
+     * @param values the array of input values (headings or speeds)
      * @param  steady_stdev interval will not be considered redundant if its standard deviation is within the limits defined 
      * by this parameter (this parameter is usually the decimal precision of written values)
-     * @return the list of isolated (bad) intervals. These intervals should be removed afterwards from the list of overall intervals.
+     * @return referent variance and degrees of freedom. (needed in sieve algorithms)
      */
-    public static ArrayList<Integer> isolateNonHomogeneous(ArrayList<Variance> _variances, double steady_stdev) {
+    public static Variance isolateNonHomogeneous(ArrayList<SCAlgorithms.SpanPair> intervals, double[] values, double steady_stdev) {
 
-    	ArrayList<Integer> indexes = new ArrayList<>();
-    	
-    	if(_variances.size() < 2)
-            return indexes;
+        Variance retval = new Variance(0, 1, 1.0);
         
-        ArrayList<Variance> variances = new ArrayList<Variance>(_variances);
+        ArrayList<Variance> _variances = new ArrayList<>();
+        for(int ii=0; ii<intervals.size(); ii++) {
+            int index_start = intervals.get(ii).first;
+            int index_end = intervals.get(ii).second;
+            int numelements = index_end - index_start;
+            double dstdev = SCStatistics.stdev(values, index_start, index_end);
+            _variances.add(new SCStatistics.Variance(ii, numelements-1,  dstdev*dstdev));
+        }
 
-        Collections.sort(variances, new SortVariances());
+        Collections.sort(_variances, new SortVariances());
+        
+        Iterator<Variance> iter = _variances.iterator();
+        while(iter.hasNext()) {
+            Variance var = iter.next();
+            System.out.println("variance: index=" + var.index + "   m2=" + String.format("%.6f", var.m2) + "   m=" + String.format("%.6f", Math.sqrt(var.m2)) + "   f=" + var.f);
+        }
 
-        int f0 = variances.get(0).f;
-        double m20 = variances.get(0).m2;
-        Variance disp = new Variance(variances.size(), f0, m20);
-        for(int ii = 1; ii < variances.size(); ii++  ) {
-            Variance disp_i = variances.get(ii);
+        // Remove wrong intervals (peaks, holes). They all have non-homogeneous variance.
+
+        // Find them...
+        int f0 = _variances.get(0).f;
+        double m20 = _variances.get(0).m2;
+        Variance disp = new Variance(_variances.size(), f0, m20);
+        ArrayList<Integer> for_remove = new ArrayList<>();
+        for(int ii = 1; ii < _variances.size(); ii++  ) {
+            Variance disp_i = _variances.get(ii);
             double d1 = Math.sqrt(disp_i.m2);
-            double d2 = 3.0 * steady_stdev;
+            double d2 = 3.0 * steady_stdev; //todo: 0.5 * SCConstants.*_STEADY_RANGE;
             if(d1 < d2) {
                 disp.f = disp_i.f;
-                disp.m2 = disp_i.m2;
+                disp.m2 = disp_i.m2;                
                 continue;
             }
-            
+
             double test = disp_i.m2 / disp.m2;
             double quantile = get999FQuantile(disp_i.f, disp.f);
             if(test <= quantile) {
@@ -643,14 +658,27 @@ public class SCStatistics {
                 disp.m2 = disp_i.m2;
             }
             else {
-                for(int jj=ii; jj<variances.size(); jj++)
-                    indexes.add(variances.get(jj).index);
+                // Take the last good variance (the biggist one) as reference variance for sieve algorithm. 
+                Variance ref = _variances.get(ii-1);
+                retval.index = ref.index;
+                retval.f = ref.f;
+                retval.m2 = ref.m2;
+                for(int jj=ii; jj<_variances.size(); jj++)
+                    for_remove.add(_variances.get(jj).index);
                 
                 break;
             }
         }
 
-        return indexes;
+        // ... and remove them
+        Collections.sort(for_remove);
+        for(int jj = for_remove.size()-1; jj >= 0; jj--) {
+            Integer myint = for_remove.get(jj);
+            System.out.println("removed (" + intervals.get(myint).first + "," + intervals.get(myint).second + ") - " + myint);
+            intervals.remove(myint.intValue());
+        }
+        
+        return retval;
     }
 
     //-------------------------------------------------------------------------
