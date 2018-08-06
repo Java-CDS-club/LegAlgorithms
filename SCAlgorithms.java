@@ -825,15 +825,42 @@ public class SCAlgorithms {
         int minelements = 35;
 
         // Apply max-deviation + regression check algorithm
-        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_maxrange(times, values, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
+        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_mean_st_maxdev(times, values, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
+        // sieveing
+        if(course_intervals0.size() > 1) {
+            // find out referent variance for sieving
+            int ff = 0;
+            double mm2 = Double.MIN_VALUE;
+            for(int ii=0; ii<course_intervals0.size(); ii++) {
+                int index_start = course_intervals0.get(ii).first;
+                int index_end = course_intervals0.get(ii).second;
+                int numelements = index_end - index_start;
+                double dstdev = SCStatistics.stdev(values, index_start, index_end);
+                double m2 = dstdev*dstdev;
+                if(m2 > mm2) {
+                    ff = numelements - 1;
+                    mm2 = m2;
+                }
+            }
+
+            course_intervals0.clear();
+            sieve_maxdev(course_intervals0, times, values, 
+                         0, values.length,  
+                         300, // 300 seconds for min-steady period !!
+                         true, 
+                         SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV,
+                         ff, mm2);
+        }
+                    
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
-        adjustRangeTouchingIntervals(times, values, course_intervals0, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
+        adjustDevTouchingIntervals(times, values, course_intervals0, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
         // Merge neighboring steady-course intervals (those that pass statistical equal-means test)
-        ArrayList<SCAlgorithms.SpanPair> course_intervals1 = mergeRangeIntervals(values, course_intervals0);
+        // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
+        // ArrayList<SCAlgorithms.SpanPair> course_intervals1 = mergeDevIntervals(times, values, course_intervals0);
 
-        return course_intervals1;
+        return course_intervals0;
     }
 
 }
