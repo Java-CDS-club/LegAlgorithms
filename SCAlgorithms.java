@@ -158,7 +158,7 @@ public class SCAlgorithms {
                     if(bRegressionAnalysis) {
                         do {
                             cond_regression = isRegressionLineHorizontal(times, values, istart, iend-1, steady_range);
-                            } while (!cond_regression && iend-- > istart + minelements);
+                            } while (!cond_regression && --iend > istart + minelements);
                         }
 
                     if(!bRegressionAnalysis || cond_regression) {
@@ -236,7 +236,7 @@ public class SCAlgorithms {
                     if(bRegressionAnalysis) {
                         do {
                             cond_regression = isRegressionLineHorizontal(times, values, istart, iend, steady_range);
-                           } while (!cond_regression && iend-- > istart + minelements);
+                           } while (!cond_regression && --iend > istart + minelements);
                         }
 
                     if(!bRegressionAnalysis || cond_regression) {
