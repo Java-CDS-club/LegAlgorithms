@@ -497,8 +497,6 @@ public class SCAlgorithms {
         Iterator<SpanPair> iter = periods_in.iterator();
         SpanPair out = iter.next();           
         while(iter.hasNext()) {
-        //for(int jj=1; jj<periods_in.size(); jj++) {
-            //SpanPair merging = periods_in.get(jj);
             SpanPair merging = iter.next();
             int num1 = out.second - out.first;
             double mean1 = SCStatistics.mean(values, out.first, out.second);
