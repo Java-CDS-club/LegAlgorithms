@@ -822,6 +822,11 @@ public class SCAlgorithms {
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getHeadings(totes);
 
+        // This is not a relevant parameter. Any value could be applied here, more or less.
+        // Used just for fifo_mean_st_maxdev and calculation of referent variance estimation 
+        // for sieve-algorithm. In fact, the minimal length of intervals is determined by time 
+        // i.e. resulting intervals must be more than 5min long.
+        // todo: make this more readable, clear and more consistent
         int minelements = 35;
 
         // Apply max-deviation + regression check algorithm
