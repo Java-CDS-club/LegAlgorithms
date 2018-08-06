@@ -491,15 +491,16 @@ public class SCAlgorithms {
      */
     public static ArrayList<SpanPair> mergeDevIntervals(double[] values, ArrayList<SpanPair> periods_in) {
 
-        // todo: throw here...
+        // todo: throw here... if empty list etc.
         ArrayList<SpanPair> periods_out = new ArrayList<>();
 
-        SpanPair in = periods_in.get(0);
-        SpanPair out = new SpanPair(in.first, in.second);
-        int num1 = out.second - out.first;
-
-        for(int jj=1; jj<periods_in.size(); jj++) {
-            SpanPair merging = periods_in.get(jj);
+        Iterator<SpanPair> iter = periods_in.iterator();
+        SpanPair out = iter.next();           
+        while(iter.hasNext()) {
+        //for(int jj=1; jj<periods_in.size(); jj++) {
+            //SpanPair merging = periods_in.get(jj);
+            SpanPair merging = iter.next();
+            int num1 = out.second - out.first;
             double mean1 = SCStatistics.mean(values, out.first, out.second);
             double stdev1 = SCStatistics.stdev(values, out.first, out.second);
 
@@ -507,47 +508,49 @@ public class SCAlgorithms {
             double mean2 = SCStatistics.mean(values, merging.first, merging.second);
             double stdev2 = SCStatistics.stdev(values, merging.first, merging.second);
 
-            // todo: Fischer's test of dispersion equality
-
             // big-interval standard deviation
             double stdev_big = SCStatistics.stdev(values, out.first, merging.second);
 
             // standard deviation of the difference of two mean values
-            double stedev_diff = Math.sqrt(stdev1*stdev1/num1 + stdev2*stdev2/num2);
+            double stedev_diff = Math.sqrt(stdev1*stdev1 + stdev2*stdev2);
 
+            // testing of equality of mean (average) values
+            double dtest1 = Math.abs(mean1 - mean2) / stedev_diff;
             double dquantile_diff = SCStatistics.get99StudentQuantil(num1 + num2 - 2);
 
-            boolean cond = Math.abs(mean1 - mean2) / stedev_diff <= dquantile_diff;
+            boolean cond = dtest1 <= dquantile_diff;
 
-            if(cond) { // merge intervals
-                int numelements = merging.second - out.first;
-                double dquantile = SCStatistics.get99StudentQuantil(numelements - 2);
+            // testing of equality of variances
+            if(cond) {
+                int num_merged = merging.second - out.first;
+                double m2f = (stdev1*stdev1*(num1 - 1) + stdev2*stdev2*(num2 - 1)) / (num1 + num2 - 2);
+                double dtest2 = stdev_big*stdev_big / m2f;
+                double dquantileF = SCStatistics.get999FQuantile(num_merged - 1, num1 + num2 - 2);
 
-                int numdev = 0; // number of corrections beyond limits (d/md > quantile)
-                for(int kk=out.first; kk<merging.second; kk++) {
-                    double dval = values[kk];
-                    double ddeviation = Math.abs(dval - mean2);
-                    double dtest = ddeviation / stdev_big * Math.sqrt(numelements / (numelements-1));
-                    if((dtest > dquantile) && (++numdev > 1 + numelements/100)) {
-                        cond = false;
-                        break;
-                    }
-                }
-
-                if(cond) {
-                    out.second = merging.second;
-                    if(periods_in.size()-1 == jj) // last steady interval in the input arraylist
-                        periods_out.add(out);
-
-                    continue;
-                }
+                cond = dtest2 <= dquantileF;
             }
 
-            periods_out.add(out);
-            out = new SpanPair(merging.first, merging.second);
-            if(periods_in.size()-1 == jj) // last steady interval in the input arraylist
+            // testing whether deviations (residuals) are in allowed limits
+            if(cond) { // merge intervals
+                cond = areDeviationsInAllowedLimits(values, out.first, merging.second, SCConstants.SPEED_STEADY_STDEV);
+            }
+
+            // testing whether regression line is horizontal // todo - if bRegression
+            if(cond) {                
+                cond = isRegressionLineHorizontal(times, values, out.first, merging.second, SCConstants.SPEED_STEADY_RANGE);
+            }
+
+            if(cond) {
+                System.out.println("Merged (" + out.first + "," + out.second + ") - (" + merging.first + "," + merging.second + ")");
+                out.second = merging.second;
+            } else {
                 periods_out.add(out);
+                out = new SpanPair(merging.first, merging.second);                
+            }
         }
+
+        // last steady interval in the input arraylist
+        periods_out.add(out);
 
         return periods_out;
     }
