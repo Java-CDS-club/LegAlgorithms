@@ -616,7 +616,7 @@ public class SCStatistics {
     public static Variance isolateNonHomogeneous(ArrayList<SCAlgorithms.SpanPair> intervals, double[] values, double steady_stdev) {
 
         Variance retval = new Variance(0, 1, 1.0);
-        
+
         ArrayList<Variance> _variances = new ArrayList<>();
         for(int ii=0; ii<intervals.size(); ii++) {
             int index_start = intervals.get(ii).first;
@@ -628,12 +628,6 @@ public class SCStatistics {
 
         Collections.sort(_variances, new SortVariances());
         
-        Iterator<Variance> iter = _variances.iterator();
-        while(iter.hasNext()) {
-            Variance var = iter.next();
-            System.out.println("variance: index=" + var.index + "   m2=" + String.format("%.6f", var.m2) + "   m=" + String.format("%.6f", Math.sqrt(var.m2)) + "   f=" + var.f);
-        }
-
         // Remove wrong intervals (peaks, holes). They all have non-homogeneous variance.
 
         // Find them...
@@ -665,7 +659,7 @@ public class SCStatistics {
                 retval.m2 = ref.m2;
                 for(int jj=ii; jj<_variances.size(); jj++)
                     for_remove.add(_variances.get(jj).index);
-                
+
                 break;
             }
         }
@@ -677,7 +671,7 @@ public class SCStatistics {
             System.out.println("removed (" + intervals.get(myint).first + "," + intervals.get(myint).second + ") - " + myint);
             intervals.remove(myint.intValue());
         }
-        
+
         return retval;
     }
 
