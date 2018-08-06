@@ -774,39 +774,41 @@ public class SCAlgorithms {
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getSpeeds(totes);
 
+        // This is not so relevant parameter. Any value could be applied here, more or less.
+        // Used just for fifo_mean_st_maxdev and calculation of referent variance estimation 
+        // for sieve-algorithm. In fact, the minimal length of intervals is determined by time 
+        // i.e. resulting intervals must be more than 5min long.
+        // todo: make this more readable, clear and more consistent
         int minelements = 35;
 
         // Apply max-deviation + regression check algorithm
         ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_mean_st_maxdev(times, values, minelements, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
 
-        // Remove redundant intervals (peaks, holes). They all have non-homogeneous variance.
+        // Remove redundant intervals (peaks, holes). They all have non-homogeneous variance. The return value is considered as average variance for this dataset.
+        SCStatistics.Variance var = SCStatistics.isolateNonHomogeneous(speed_intervals0, values, SCConstants.SPEED_STEADY_STDEV);
 
-        // Find them...
-        ArrayList<SCStatistics.Variance> list = new ArrayList<>();
-        for(int ii=0; ii<speed_intervals0.size(); ii++) {
-            int index_start = speed_intervals0.get(ii).first;
-            int index_end = speed_intervals0.get(ii).second;
-            int numelements = index_end - index_start;
-            double dstdev = SCStatistics.stdev(values, index_start, index_end);
-            list.add(new SCStatistics.Variance(ii, numelements-1,  dstdev*dstdev));
+        // sieving 
+        if(speed_intervals0.size() > 1) {
+            int ff = var.f;
+            double mm2 = var.m2;
+
+            speed_intervals0.clear();
+            sieve_maxdev(speed_intervals0, times, values, 
+                         0, values.length,  
+                         300, // 300 seconds (i.e 5min) for min-steady period !!
+                         true, 
+                         SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV,
+                         ff, mm2);
         }
-
-        ArrayList<Integer> _4remove = SCStatistics.isolateNonHomogeneous(list, SCConstants.SPEED_STEADY_STDEV);
-
-        // ... and remove them
-        Collections.sort(_4remove);
-        for(int jj = _4remove.size()-1; jj >= 0; jj--) {
-            Integer myint = _4remove.get(jj);
-            speed_intervals0.remove(myint.intValue());
-        }
-
+                    
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
         adjustDevTouchingIntervals(times, values, speed_intervals0, minelements, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
 
         // Merge neighboring steady-speed intervals (those that pass statistical equal-means test)
-        ArrayList<SCAlgorithms.SpanPair> speed_intervals2 = mergeDevIntervals(values, speed_intervals0);
+        // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
+        // ArrayList<SCAlgorithms.SpanPair> speed_intervals2 = mergeDevIntervals(times, values, speed_intervals0);
 
-        return speed_intervals2;
+        return speed_intervals0;
     }
 
     //-------------------------------------------------------------------------
