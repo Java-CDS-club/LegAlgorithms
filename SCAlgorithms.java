@@ -1,12 +1,11 @@
 
-import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class SCAlgorithms {
 
     // internal utility data structures
-    public static class SpanPair{
+    public static class SpanPair {
         public SpanPair (int _first, int _second) {
             first = _first;
             second = _second;
@@ -19,7 +18,7 @@ public class SCAlgorithms {
     //-------------------------------------------------------------------------
     /**
      * Returns true if we all the deviations from mean value are within the statistically allowed limits
-     * (hypothesis |x(i)-x'| > 0 is tested; alternative hypothesis is |x(i)-x'| = 0
+     * (hypothesis |x(i)-x'| = 0 is tested; alternative hypothesis is |x(i)-x'| > 0
      * test value (x(i)-x')/sigma(x)*sqrt(n-1)/sqrt(n) has Student(0,1) distribution with n-1 degrees of freedom)
      * @param  times the array of times
      * @param  values the array of values
@@ -85,14 +84,13 @@ public class SCAlgorithms {
      * @return boolean - true if we can consider regression line horizontal
      */
     static boolean isRegressionLineHorizontal(double[] times, double[] values, int istart, int iend, double steady_range) {
-
         SCStatistics.RegrResults res = SCStatistics.lregression(times, values, istart, iend);
         final int numelements = iend - istart;
         final double dstdev = SCStatistics.stdev(values, istart, iend);
         final double regression_grow = Math.abs(res.a * (times[iend-1] - times[istart]));
         boolean cond1 = regression_grow <= Double.max(steady_range, dstdev);
 
-        // if regression line cannot increase significntly we can consider the line horizontal
+        // if regression line cannot increase significantly we can consider the line horizontal
         if (cond1) return true;
 
         // ... otherwise we have to compare test statistics
@@ -118,11 +116,11 @@ public class SCAlgorithms {
      * @param bRegressionAnalysis perform regression analysis if true
      * @param  steady_range it will be considered that interval is steady if its max and min valueas are in this predefined range
      * @param  steady_stdev it will be considered that interval is steady if standard deviation is less then this predefined argument
-     * @return ArrayList< SpanPair > - array of steady intervals extracted form totes
+     * @return ArrayList< SpanPair > - array of steady intervals extracted from totes
+     * todo min_elapsedtime instead of minelements
      * todo it should be optimized. It can run significantly faster.
      */
     public static ArrayList<SpanPair> fifo_mean_st_maxdev(double[] times, double[] values, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
-
         if (times.length != values.length)
             throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_mean_st_maxdev - input arrays of different length");
 
@@ -154,15 +152,16 @@ public class SCAlgorithms {
                 else {
                     boolean cond_regression = bRegressionAnalysis ? true : false;
 
-                    // Is horizontal line - linear regressiona analysis. If not, iterate backward until finding horizontal line.
+                    // Is horizontal line - linear regression analysis. If not, iterate backward until finding horizontal line.
                     if(bRegressionAnalysis) {
                         do {
                             cond_regression = isRegressionLineHorizontal(times, values, istart, iend-1, steady_range);
-                            } while (!cond_regression && --iend > istart + minelements);
+                           } while (!cond_regression && --iend > istart + minelements);
                         }
 
                     if(!bRegressionAnalysis || cond_regression) {
                         if(shiftDevIntervalRight(times, values, istart, iend-1, bRegressionAnalysis, steady_stdev)) {
+                            System.out.println("dev-shifted: " + istart + " - " + iend + "  (" + (iend-istart) + ")");
                             istart++;
                             continue;
                         }
@@ -297,7 +296,6 @@ public class SCAlgorithms {
                 double dtime = times[jj-1] - times[ii];
                 if(dtime < minseconds) 
                     continue;
-                
                 // testing deviations
                 boolean bcond = areDeviationsInAllowedLimits(values, ii, jj, steady_stdev);
 
@@ -354,7 +352,7 @@ public class SCAlgorithms {
 
     //-------------------------------------------------------------------------
     /**
-     * Returns a number of possible steady-interval shifting (to the right) so that the new interval should be statistically better.
+     * Returns a number of possible steady-interval shifting (to the right) so that the new interval should be statistically better (satisfying the allowed-deviations condition).
      * (Example: the initial interval [5,15) is statistically good; [5,16) is bad; [6,16) is good and even better
      * than [5,15) - it is recommendable to shift the initial steady interval to the right for 1)
      * @param  times the array of times
@@ -486,7 +484,7 @@ public class SCAlgorithms {
      * Criterion that has to be fulfilled - all the deviations (in the merged interval) have to be within allowed limits
      * @param  values the array of values
      * @param  periods_in the array of steady course/speed intervals
-     * todo it should be optimized. It can run significantly faster.
+     * todo it should be optimized. It can run significantly faster
      */
     public static ArrayList<SpanPair> mergeDevIntervals(double[] times, double[] values, ArrayList<SpanPair> periods_in) {
 
@@ -557,6 +555,7 @@ public class SCAlgorithms {
      * Criterion that has to be fulfilled - the maximal range (in merged interval) has to be within allowed limits
      * @param  values the array of values
      * @param  periods_in the array of steady course/speed intervals
+     * @return ArrayList<SpanPair> - new list of merged intervals.
      * todo it should be optimized. It can run significantly faster
      */
     public static ArrayList<SpanPair> mergeRangeIntervals(double[] values, ArrayList<SpanPair> periods_in) {
@@ -565,7 +564,6 @@ public class SCAlgorithms {
 
         SpanPair in = periods_in.get(0);
         SpanPair out = new SpanPair(in.first, in.second);
-        //int num1 = out.second - out.first;
 
         for(int jj=1; jj<periods_in.size(); jj++) {
             SpanPair merging = periods_in.get(jj);
@@ -604,10 +602,9 @@ public class SCAlgorithms {
      * Intersects two lists of intervals (e.g. steady course and steady speed intervals).
      * @param  first the first list of intervals (the list has to be ordered)
      * @param  second the second list of intervals (the list has to be ordered)
-     * @return rrayList<SpanPair> - Returns new list of a combined/intersected intervals.
+     * @return ArrayList<SpanPair> - Returns new list of a combined/intersected intervals.
      */
     public static ArrayList<SpanPair> intersectLists(ArrayList<SpanPair> first, ArrayList<SpanPair> second) {
-
         ArrayList<SpanPair> intersection = new ArrayList<>();
 
         // examine and treat properly all the topological possibilities
@@ -688,7 +685,7 @@ public class SCAlgorithms {
                 // Is this is the optimal case, so far - remember it
                 double stdev_left = SCStatistics.stdev(values, left.first, touching);
                 double stdev_right = SCStatistics.stdev(values, touching, right.second);
-                double sumdev2 = stdev_left*(touching - left.first - 1) + stdev_right*(right.second - touching - 1);
+                double sumdev2 = stdev_left*stdev_left*(touching - left.first - 1) + stdev_right*stdev_right*(right.second - touching - 1);
 
                 if(sumdev2 < minsumdev2) {
                     minsumdev2 = sumdev2;
@@ -785,7 +782,7 @@ public class SCAlgorithms {
         // Remove redundant intervals (peaks, holes). They all have non-homogeneous variance. The return value is considered as average variance for this dataset.
         SCStatistics.Variance var = SCStatistics.isolateNonHomogeneous(speed_intervals0, values, SCConstants.SPEED_STEADY_STDEV);
 
-        // sieving 
+        // sieving
         if(speed_intervals0.size() > 1) {
             int ff = var.f;
             double mm2 = var.m2;
@@ -830,7 +827,7 @@ public class SCAlgorithms {
         // Apply max-deviation + regression check algorithm
         ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_mean_st_maxdev(times, values, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
-        // sieveing
+        // sieving
         if(course_intervals0.size() > 1) {
             // find out referent variance for sieving
             int ff = 0;
