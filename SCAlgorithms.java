@@ -335,7 +335,6 @@ public class SCAlgorithms {
                              steady_range, steady_stdev,
                              ff, mm2);
 
-                System.out.println("adding: [" + nsp.first + ", " + nsp.second + ")");
                 spans.add(new SpanPair(nsp.first, nsp.second));
 
                 sieve_maxdev(spans, times, values, 
@@ -539,7 +538,6 @@ public class SCAlgorithms {
             }
 
             if(cond) {
-                System.out.println("Merged (" + out.first + "," + out.second + ") - (" + merging.first + "," + merging.second + ")");
                 out.second = merging.second;
             } else {
                 periods_out.add(out);

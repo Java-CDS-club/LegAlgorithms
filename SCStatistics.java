@@ -668,7 +668,6 @@ public class SCStatistics {
         Collections.sort(for_remove);
         for(int jj = for_remove.size()-1; jj >= 0; jj--) {
             Integer myint = for_remove.get(jj);
-            System.out.println("removed (" + intervals.get(myint).first + "," + intervals.get(myint).second + ") - " + myint);
             intervals.remove(myint.intValue());
         }
 
