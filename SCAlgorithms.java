@@ -489,7 +489,7 @@ public class SCAlgorithms {
      * @param  periods_in the array of steady course/speed intervals
      * todo it should be optimized. It can run significantly faster.
      */
-    public static ArrayList<SpanPair> mergeDevIntervals(double[] values, ArrayList<SpanPair> periods_in) {
+    public static ArrayList<SpanPair> mergeDevIntervals(double[] times, double[] values, ArrayList<SpanPair> periods_in) {
 
         // todo: throw here... if empty list etc.
         ArrayList<SpanPair> periods_out = new ArrayList<>();
