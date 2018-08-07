@@ -287,7 +287,7 @@ public class SCAlgorithms {
 
         int minelements = 3; // it is expected that min-time period will never be less than three elements
 
-        int numelements = iend - istart;  
+        int numelements = iend - istart;
         while(numelements >= minelements) {
             SpanPair nsp = new SpanPair(0,0);
             double stdevmin = Double.MAX_VALUE;
@@ -782,6 +782,7 @@ public class SCAlgorithms {
         SCStatistics.Variance var = SCStatistics.isolateNonHomogeneous(speed_intervals0, values, SCConstants.SPEED_STEADY_STDEV);
 
         // sieving
+        System.out.println("\nPlease, wait. Sieve algorithm is working... \n");
         if(speed_intervals0.size() > 1) {
             int ff = var.f;
             double mm2 = var.m2;
@@ -827,6 +828,7 @@ public class SCAlgorithms {
         ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_mean_st_maxdev(times, values, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
         // sieving
+        System.out.println("\nPlease, wait. Sieve algorithm is working... \n");
         if(course_intervals0.size() > 1) {
             // find out referent variance for sieving
             int ff = 0;
