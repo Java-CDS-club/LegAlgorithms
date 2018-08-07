@@ -1,7 +1,17 @@
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Steady_course {
+
+    //-------------------------------------------------------------------------
+	static void printIntervals(ArrayList<SCAlgorithms.SpanPair> intervals) /*throws IOException*/ {
+		Iterator<SCAlgorithms.SpanPair> iter = intervals.iterator();
+		while(iter.hasNext()) {
+			SCAlgorithms.SpanPair item = iter.next();
+			System.out.println(String.format("%5d", item.first) + " " + String.format("%5d", item.second));
+		}
+	}
 
     //=========================================================================
     public static void main(String[] args) {
@@ -12,12 +22,18 @@ public class Steady_course {
 
             // Finding out steady-course periods
             ArrayList<SCAlgorithms.SpanPair> course0_intervals = SCAlgorithms.extractStaedyHeadings(totes);
+            System.out.println("\nSteady course intervals:");
+            printIntervals(course0_intervals);
 
             // Finding out steady-speed periods
             ArrayList<SCAlgorithms.SpanPair> speed0_intervals = SCAlgorithms.extractStaedySpeeds(totes);
+            System.out.println("\nSteady speed intervals:");
+            printIntervals(speed0_intervals);
             
             // Combine them
             ArrayList<SCAlgorithms.SpanPair> steady_CourseAndSpeed_intervals = SCAlgorithms.intersectLists(course0_intervals, speed0_intervals);
+            System.out.println("\nSteady course-speed combined intervals:");
+            printIntervals(steady_CourseAndSpeed_intervals);
 
             // Trace the results
             //System.out.println("There are " + (any list from above).size() + " steady course intervals.");
