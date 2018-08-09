@@ -163,7 +163,6 @@ public class SCAlgorithms {
 
                     if(!bRegressionAnalysis || cond_regression) {
                         if(shiftDevIntervalRight(times, values, istart, iend-1, bRegressionAnalysis, steady_stdev)) {
-                            System.out.println("dev-shifted: " + istart + " - " + iend + "  (" + (iend-istart) + ")");
                             istart++;
                             continue;
                         }
