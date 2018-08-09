@@ -112,7 +112,7 @@ public class SCAlgorithms {
      * Inclination of regression line is analyzed afterwards.
      * @param  times the array of times
      * @param  values the array of values
-     * @param minelements the minimal number of elements in the 'steady' interval
+     * @param  mintimes the minimal elapsed time of the 'steady' interval. Intervals cannot be considered steady if mintimes has not elapsed.
      * @param bRegressionAnalysis perform regression analysis if true
      * @param  steady_range it will be considered that interval is steady if its max and min valueas are in this predefined range
      * @param  steady_stdev it will be considered that interval is steady if standard deviation is less then this predefined argument
@@ -120,16 +120,19 @@ public class SCAlgorithms {
      * todo min_elapsedtime instead of minelements
      * todo it should be optimized. It can run significantly faster.
      */
-    public static ArrayList<SpanPair> fifo_maxdev(double[] times, double[] values, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
+    public static ArrayList<SpanPair> fifo_maxdev(double[] times, double[] values, double mintimes, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
         if (times.length != values.length)
             throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_maxdev - input arrays of different length");
 
         ArrayList<SpanPair> periods = new ArrayList<>();
 
         int istart=0;
-        int iend = istart + minelements;
+        int iend = istart + 1;
+        boolean bfirstpass = true;
 
-        while ((istart <= values.length - minelements) && (iend <= values.length)) {
+        while ((istart < values.length - 1) && (iend <= values.length)) {
+            while(times[iend - 1] - times[istart] < mintimes) iend++;
+
             boolean bcondition;
             final double dmax = SCStatistics.max(values, istart, iend);
             final double dmin = SCStatistics.min(values, istart, iend);
@@ -146,9 +149,8 @@ public class SCAlgorithms {
 
             if(!bcondition || values.length == iend) {
 
-                if(iend - istart == minelements) // if no success; if no steady interval at the very beginning - then, iterate forward
-                    iend = ++istart + minelements;
-
+                if(bfirstpass) // if no success; if no steady interval at the very beginning - then, iterate forward
+                    iend = ++istart + 1;
                 else {
                     boolean cond_regression = bRegressionAnalysis ? true : false;
 
@@ -156,11 +158,12 @@ public class SCAlgorithms {
                     if(bRegressionAnalysis) {
                         do {
                             cond_regression = isRegressionLineHorizontal(times, values, istart, iend-1, steady_range);
-                           } while (!cond_regression && --iend > istart + minelements);
+                           } while (!cond_regression && times[--iend - 1] - times[istart] >= mintimes);
                         }
 
                     if(!bRegressionAnalysis || cond_regression) {
                         if(shiftDevIntervalRight(times, values, istart, iend-1, bRegressionAnalysis, steady_stdev)) {
+                            System.out.println("dev-shifted: " + istart + " - " + iend + "  (" + (iend-istart) + ")");
                             istart++;
                             continue;
                         }
@@ -168,16 +171,19 @@ public class SCAlgorithms {
                         SpanPair sp = new SpanPair(istart, (iend != values.length ? --iend : iend));
                         periods.add(sp);
 
-                        istart = iend;
-                        iend += minelements;
+                        istart = iend++;
                     }
                     else // if no interval passed regression test - iterate forward
-                        iend = ++istart + minelements;
+                        iend = ++istart + 1;
                 }
 
+                bfirstpass = true;
             }
-            else
+
+            else {
                 iend++;
+                bfirstpass = false;
+            }
         }
 
         return periods;
