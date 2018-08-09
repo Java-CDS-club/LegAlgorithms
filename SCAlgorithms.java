@@ -275,6 +275,9 @@ public class SCAlgorithms {
      * a) the sum of lengths is maximal b) the sum of squares of residuals is minimal.
      * @param times the array of times
      * @param values the array of values
+     * @param  istart (inclusive) lower index of the sub-array
+     * @param  iend (exclusive) upper index of the sub-array
+     * @param numelems number of elements for 'sieving' (it can be less than iend-istart)
      * @param minseconds the resulting interval have to be greater than minseconds
      * @param bRegressionAnalysis perform regression analysis if true
      * @param steady_range it will be considered that interval is steady if its max and min valueas are in this predefined range
@@ -285,22 +288,32 @@ public class SCAlgorithms {
      */
     public static void sieve_maxdev(ArrayList<SpanPair> spans, 
                                     double[] times, double[] values, 
-                                    int istart, int iend,
+                                    int istart, int iend, int numelems,
                                     double minseconds,
                                     boolean bRegressionAnalysis, 
                                     double steady_range, double steady_stdev,
                                     int ff, double mm2) {
 
-        int minelements = 3; // it is expected that min-time period will never be less than three elements
+        int minelements = 2; // min-time period cannot be less than two elements
+        boolean btimespan = true;
 
-        int numelements = iend - istart;
+        int numelements = Integer.min(iend - istart, numelems);
         while(numelements >= minelements) {
+
+            if(!btimespan)
+                break;
+            else
+                btimespan = false;
+
             SpanPair nsp = new SpanPair(0,0);
             double stdevmin = Double.MAX_VALUE;
             for(int ii = istart, jj = istart + numelements; jj<=iend; ii++, jj++) {
                 double dtime = times[jj-1] - times[ii];
                 if(dtime < minseconds) 
                     continue;
+
+                btimespan = true;
+
                 // testing deviations
                 boolean bcond = areDeviationsInAllowedLimits(values, ii, jj, steady_stdev);
 
@@ -332,7 +345,7 @@ public class SCAlgorithms {
             // add it and make recursive calls for right and left subintervals
             if(nsp.second != 0) {
                 sieve_maxdev(spans, times, values, 
-                             istart, nsp.first,
+                             istart, nsp.first, numelements - 1,
                              minseconds, 
                              bRegressionAnalysis, 
                              steady_range, steady_stdev,
@@ -341,7 +354,7 @@ public class SCAlgorithms {
                 spans.add(new SpanPair(nsp.first, nsp.second));
 
                 sieve_maxdev(spans, times, values, 
-                             nsp.second, iend,
+                             nsp.second, iend, numelements,
                              minseconds, 
                              bRegressionAnalysis, 
                              steady_range, steady_stdev,
@@ -801,7 +814,7 @@ public class SCAlgorithms {
 
             speed_intervals0.clear();
             sieve_maxdev(speed_intervals0, times, values, 
-                         0, values.length,
+                         0, values.length, values.length,
                          mintimes, // 300 seconds (i.e 5min) for min-steady period
                          true, 
                          SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV,
@@ -855,7 +868,7 @@ public class SCAlgorithms {
 
             course_intervals0.clear();
             sieve_maxdev(course_intervals0, times, values, 
-                         0, values.length,
+                         0, values.length, values.length,
                          mintimes, // 300 seconds for min-steady period
                          true, 
                          SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV,
