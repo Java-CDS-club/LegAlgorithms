@@ -120,9 +120,9 @@ public class SCAlgorithms {
      * todo min_elapsedtime instead of minelements
      * todo it should be optimized. It can run significantly faster.
      */
-    public static ArrayList<SpanPair> fifo_mean_st_maxdev(double[] times, double[] values, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
+    public static ArrayList<SpanPair> fifo_maxdev(double[] times, double[] values, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
         if (times.length != values.length)
-            throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_mean_st_maxdev - input arrays of different length");
+            throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_maxdev - input arrays of different length");
 
         ArrayList<SpanPair> periods = new ArrayList<>();
 
@@ -200,7 +200,7 @@ public class SCAlgorithms {
      */
     public static ArrayList<SpanPair> fifo_maxrange(double[] times, double[] values, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
         if (times.length != values.length)
-            throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_mean_st_maxdev - input arrays of different length");
+            throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_maxrange - input arrays of different length");
 
         ArrayList<SpanPair> periods = new ArrayList<>();
 
@@ -365,13 +365,13 @@ public class SCAlgorithms {
      */
     public static boolean shiftDevIntervalRight(double[] times, double[] values, int istart, int iend, boolean bRegressionAnalysis, double steady_stdev) {
         if (0 > istart)
-            throw new IndexOutOfBoundsException("Calling ScStatistics.shiftIntervalRight - 'istart' index (" + istart + ") is less than 0.");
+            throw new IndexOutOfBoundsException("Calling ScAlgorithms.shiftDevIntervalRight - 'istart' index (" + istart + ") is less than 0.");
 
         if (istart > iend)
-            throw new NegativeArraySizeException("Calling ScStatistics.shiftIntervalRight - 'istart' (" + istart + ") is bigger than 'iend' (" + iend + ").");
+            throw new NegativeArraySizeException("Calling ScAlgorithms.shiftDevIntervalRight - 'istart' (" + istart + ") is bigger than 'iend' (" + iend + ").");
 
         if (times.length != values.length)
-            throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_mean_st_maxdev - input arrays of different length");
+            throw new IndexOutOfBoundsException("Calling ScAlgorithms.shifDevtIntervalRight - input arrays of different length");
 
         if (iend >= values.length - 1)
             return false;
@@ -429,13 +429,13 @@ public class SCAlgorithms {
      */
     public static boolean shiftRangeIntervalRight(double[] times, double[] values, int istart, int iend, boolean bRegressionAnalysis, double steady_stdev) {
         if (0 > istart)
-            throw new IndexOutOfBoundsException("Calling ScStatistics.shiftIntervalRight - 'istart' index (" + istart + ") is less than 0.");
+            throw new IndexOutOfBoundsException("Calling ScAlgorithms.shiftRangeIntervalRight - 'istart' index (" + istart + ") is less than 0.");
 
         if (istart > iend)
-            throw new NegativeArraySizeException("Calling ScStatistics.shiftIntervalRight - 'istart' (" + istart + ") is bigger than 'iend' (" + iend + ").");
+            throw new NegativeArraySizeException("Calling ScAlgorithms.shiftRangeIntervalRight - 'istart' (" + istart + ") is bigger than 'iend' (" + iend + ").");
 
         if (times.length != values.length)
-            throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_mean_st_maxdev - input arrays of different length");
+            throw new IndexOutOfBoundsException("Calling ScAlgorithms.shifRangetIntervalRight - input arrays of different length");
 
         if (iend > values.length - 1)
             return false;
@@ -769,14 +769,14 @@ public class SCAlgorithms {
         double[] values = SCStatistics.getSpeeds(totes);
 
         // This is not so relevant parameter. Any value could be applied here, more or less.
-        // Used just for fifo_mean_st_maxdev and calculation of referent variance estimation 
+        // Used just for fifo_maxdev and calculation of referent variance estimation 
         // for sieve-algorithm. In fact, the minimal length of intervals is determined by time 
         // i.e. resulting intervals must be more than 5min long.
         // todo: make this more readable, clear and more consistent
         int minelements = 35;
 
         // Apply max-deviation + regression check algorithm
-        ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_mean_st_maxdev(times, values, minelements, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
+        ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_maxdev(times, values, minelements, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
 
         // Remove redundant intervals (peaks, holes). They all have non-homogeneous variance. The return value is considered as average variance for this dataset.
         SCStatistics.Variance var = SCStatistics.isolateNonHomogeneous(speed_intervals0, values, SCConstants.SPEED_STEADY_STDEV);
@@ -818,14 +818,14 @@ public class SCAlgorithms {
         double[] values = SCStatistics.getHeadings(totes);
 
         // This is not a relevant parameter. Any value could be applied here, more or less.
-        // Used just for fifo_mean_st_maxdev and calculation of referent variance estimation 
+        // Used just for fifo_maxdev and calculation of referent variance estimation 
         // for sieve-algorithm. In fact, the minimal length of intervals is determined by time 
         // i.e. resulting intervals must be more than 5min long.
         // todo: make this more readable, clear and more consistent
         int minelements = 35;
 
         // Apply max-deviation + regression check algorithm
-        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_mean_st_maxdev(times, values, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
+        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_maxdev(times, values, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
         // sieving
         System.out.println("\nPlease, wait. Sieve algorithm is working... \n");
