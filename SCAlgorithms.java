@@ -650,13 +650,13 @@ public class SCAlgorithms {
      * @param times the times in the examined period
      * @param values the values being examined (headings or speeds)
      * @param periods the array of steady course/speed intervals
-     * @param minelements the minimal number of elements in a 'steady' interval
+     * @param mintimes the minimal elapsed time of the 'steady' interval. Intervals cannot be considered steady if mintimes has not elapsed.
      * @param bRegressionAnalysis perform regression analysis if true
      * @param  steady_range it will be considered that interval is steady if its max and min values are in this predefined range
      * @param  steady_stdev it will be considered that deviations are
      * in allowed limits if standard deviation is less then this predefined argument
      */
-    public static void adjustDevTouchingIntervals(double[] times, double[] values, ArrayList<SpanPair> periods, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
+    public static void adjustDevTouchingIntervals(double[] times, double[] values, ArrayList<SpanPair> periods, double mintimes, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
 
         // Iterate through the list, having in focus only neighboring intervals
         for(int ii=0, jj=1; jj<periods.size(); ii++, jj++) {
@@ -670,8 +670,18 @@ public class SCAlgorithms {
             int touching_final = left.second;
             double minsumdev2 = Double.MAX_VALUE; // sum of squares of deviations - the crucial parameter
 
+            // left interval has to be greater (in timeunits) than mintimes
+            int leftmovingedge = left.first + 1;
+            while(times[leftmovingedge-1] - times[left.first] < mintimes)
+                leftmovingedge++;
+
+            // right interval has to be greater (in timeunits) than mintimes
+            int rightmovingedge = right.second;
+            while(times[right.second-1] - times[rightmovingedge] < mintimes)
+                rightmovingedge--;
+
             // Test all possible touching points between...
-            for(int touching = left.first + minelements; touching <= right.second - minelements; touching++) {
+            for(int touching = leftmovingedge; touching <= rightmovingedge; touching++) {
 
                 // First, check whether deviations are in allowed limits
                 boolean cond_first_ok = areDeviationsInAllowedLimits(values, left.first, touching, steady_stdev);
