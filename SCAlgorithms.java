@@ -784,15 +784,11 @@ public class SCAlgorithms {
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getSpeeds(totes);
 
-        // This is not so relevant parameter. Any value could be applied here, more or less.
-        // Used just for fifo_maxdev and calculation of referent variance estimation 
-        // for sieve-algorithm. In fact, the minimal length of intervals is determined by time 
-        // i.e. resulting intervals must be more than 5min long.
-        // todo: make this more readable, clear and more consistent
-        int minelements = 35;
+        // An interval cannot be considered a steady-speed interval if the elapsed time is less than 5min
+        double mintimes = 300.0;
 
         // Apply max-deviation + regression check algorithm
-        ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_maxdev(times, values, minelements, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
+        ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_maxdev(times, values, mintimes, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
 
         // Remove redundant intervals (peaks, holes). They all have non-homogeneous variance. The return value is considered as average variance for this dataset.
         SCStatistics.Variance var = SCStatistics.isolateNonHomogeneous(speed_intervals0, values, SCConstants.SPEED_STEADY_STDEV);
@@ -805,15 +801,15 @@ public class SCAlgorithms {
 
             speed_intervals0.clear();
             sieve_maxdev(speed_intervals0, times, values, 
-                         0, values.length,  
-                         300, // 300 seconds (i.e 5min) for min-steady period !!
+                         0, values.length,
+                         mintimes, // 300 seconds (i.e 5min) for min-steady period
                          true, 
                          SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV,
                          ff, mm2);
         }
                     
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
-        adjustDevTouchingIntervals(times, values, speed_intervals0, minelements, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
+        adjustDevTouchingIntervals(times, values, speed_intervals0, mintimes, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
 
         // Merge neighboring steady-speed intervals (those that pass statistical equal-means test)
         // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
@@ -833,15 +829,11 @@ public class SCAlgorithms {
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getHeadings(totes);
 
-        // This is not a relevant parameter. Any value could be applied here, more or less.
-        // Used just for fifo_maxdev and calculation of referent variance estimation 
-        // for sieve-algorithm. In fact, the minimal length of intervals is determined by time 
-        // i.e. resulting intervals must be more than 5min long.
-        // todo: make this more readable, clear and more consistent
-        int minelements = 35;
+        // An interval cannot be considered a steady-speed interval if the elapsed time is less than 5min
+        double mintimes = 300.0;
 
         // Apply max-deviation + regression check algorithm
-        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_maxdev(times, values, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
+        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_maxdev(times, values, mintimes, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
         // sieving
         System.out.println("\nPlease, wait. Sieve algorithm is working... \n");
@@ -863,15 +855,15 @@ public class SCAlgorithms {
 
             course_intervals0.clear();
             sieve_maxdev(course_intervals0, times, values, 
-                         0, values.length,  
-                         300, // 300 seconds for min-steady period !!
+                         0, values.length,
+                         mintimes, // 300 seconds for min-steady period
                          true, 
                          SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV,
                          ff, mm2);
         }
                     
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
-        adjustDevTouchingIntervals(times, values, course_intervals0, minelements, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
+        adjustDevTouchingIntervals(times, values, course_intervals0, mintimes, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
         // Merge neighboring steady-course intervals (those that pass statistical equal-means test)
         // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
@@ -881,3 +873,4 @@ public class SCAlgorithms {
     }
 
 }
+
