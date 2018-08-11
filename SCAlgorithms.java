@@ -320,7 +320,7 @@ public class SCAlgorithms {
                 if (bcond) {
                     double dstdev2 = SCStatistics.stdev(values, ii, jj);
                     double test = dstdev2*dstdev2 / mm2;
-                    double quantile = SCStatistics.get999FQuantile((jj - ii - 1), ff);
+                    double quantile = SCStatistics.get99FQuantile((jj - ii - 1), ff);
                     bcond = (test <= quantile);
                 }
 
@@ -537,7 +537,7 @@ public class SCAlgorithms {
                 int num_merged = merging.second - out.first;
                 double m2f = (stdev1*stdev1*(num1 - 1) + stdev2*stdev2*(num2 - 1)) / (num1 + num2 - 2);
                 double dtest2 = stdev_big*stdev_big / m2f;
-                double dquantileF = SCStatistics.get999FQuantile(num_merged - 1, num1 + num2 - 2);
+                double dquantileF = SCStatistics.get99FQuantile(num_merged - 1, num1 + num2 - 2);
 
                 cond = dtest2 <= dquantileF;
             }
