@@ -646,7 +646,7 @@ public class SCStatistics {
             }
 
             double test = disp_i.m2 / disp.m2;
-            double quantile = get999FQuantile(disp_i.f, disp.f);
+            double quantile = get99FQuantile(disp_i.f, disp.f);
             if(test <= quantile) {
                 disp.f = disp_i.f;
                 disp.m2 = disp_i.m2;
