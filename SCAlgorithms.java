@@ -688,7 +688,7 @@ public class SCAlgorithms {
                 leftmovingedge++;
 
             // right interval has to be greater (in timeunits) than mintimes
-            int rightmovingedge = right.second;
+            int rightmovingedge = right.second - 1;
             while(times[right.second-1] - times[rightmovingedge] < mintimes)
                 rightmovingedge--;
 
