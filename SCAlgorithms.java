@@ -97,7 +97,7 @@ public class SCAlgorithms {
         boolean cond2 = true;
         if(res.ma > 1.e-8) { // Preventing devzero errors
             final double dtest = Math.abs(res.a / res.ma);
-            final double dquantile = numelements > 2 ? SCStatistics.get999StudentQuantil(numelements - 2) : SCStatistics.get999StudentQuantil(1) ;
+            final double dquantile = numelements > 2 ? SCStatistics.get99StudentQuantil(numelements - 2) : SCStatistics.get99StudentQuantil(1) ;
             cond2 = dtest <= dquantile;
         }
 
@@ -416,7 +416,7 @@ public class SCAlgorithms {
             if (dmax - dmin > 0.1) { // no need to analyze regression of the next interval if all the values in array are within 0.01 range
                 SCStatistics.RegrResults res = SCStatistics.lregression(times, values, istartnew, iendnew);
                 double dtest = Math.abs(res.a / res.ma);
-                double dquantile = numelements > 2 ? SCStatistics.get999StudentQuantil(numelements - 2) : SCStatistics.get999StudentQuantil(1) ;
+                double dquantile = numelements > 2 ? SCStatistics.get99StudentQuantil(numelements - 2) : SCStatistics.get99StudentQuantil(1) ;
                 double regression_grow = Math.abs(res.a * (times[iend] - times[istart+1])); // iend (not iendnew). The end of intervals are always exclusive.
                 boolean bcond = (regression_grow <= stdev_new || dtest <= dquantile);
                 if(bcond) { // no shift if the next interval regression line is more inclined
@@ -480,7 +480,7 @@ public class SCAlgorithms {
             if (dmax - dmin > 0.1) { // no need to analyze regression of the next interval if all the values in array are within 0.01 range
                 SCStatistics.RegrResults res = SCStatistics.lregression(times, values, istartnew, iendnew);
                 double dtest = Math.abs(res.a / res.ma);
-                double dquantile = numelements > 2 ? SCStatistics.get999StudentQuantil(numelements - 2) : SCStatistics.get999StudentQuantil(1) ;
+                double dquantile = numelements > 2 ? SCStatistics.get99StudentQuantil(numelements - 2) : SCStatistics.get99StudentQuantil(1) ;
                 double regression_grow = Math.abs(res.a * (times[iendnew] - times[istartnew]));
                 boolean bcond = (regression_grow <= stdev_new || dtest <= dquantile);
                 if(bcond) { // no shift if the next interval regression line is more inclined
