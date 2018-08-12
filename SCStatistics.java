@@ -361,10 +361,15 @@ public class SCStatistics {
         double dsum_squares = 0.0;
         for (int ii=0; ii<ardoubles.length; ii++)
             dsum_squares += ardoubles[ii]*ardoubles[ii];
-        
-        return Math.sqrt((dsum_squares - dmean*dmean * ardoubles.length) / (ardoubles.length - 1));
+
+        double d1 = dsum_squares - dmean*dmean * ardoubles.length;
+        if(d1 < 1e-9) return 0.0;
+        double d2 = d1 / (ardoubles.length - 1);
+        double d3 = Math.sqrt(d2);
+
+        return d3;
     }
-    
+
     //-------------------------------------------------------------------------
     /**
      * Returns standard deviation from a sub-array of normally distributed values (expected mean value is unknown)
@@ -386,10 +391,15 @@ public class SCStatistics {
         double dsum_squares = 0.0;
         for (int ii=istart; ii<iend; ii++)
             dsum_squares += ardoubles[ii]*ardoubles[ii];
-        
-        return Math.sqrt((dsum_squares - dmean*dmean * numelemets) / (numelemets - 1));
+
+        double d1 = dsum_squares - dmean*dmean * numelemets;
+        if(d1 < 1e-9) return 0.0;
+        double d2 = d1 / (numelemets - 1);
+        double d3 = Math.sqrt(d2);
+
+        return d3;
     }
-    
+
     //-------------------------------------------------------------------------
     /**
      * Returns standard deviation an array of normally distributed values (please note: expected 'mean' value is known)
@@ -402,10 +412,15 @@ public class SCStatistics {
         double dsum_squares = 0.0;
         for (int ii=0; ii<ardoubles.length; ii++)
             dsum_squares += ardoubles[ii]*ardoubles[ii];
-        
-        return Math.sqrt((dsum_squares - dmean*dmean * ardoubles.length) / ardoubles.length);
+
+        double d1 = dsum_squares - dmean*dmean * ardoubles.length;
+        if(d1 < 1e-9) return 0.0; 
+        double d2 = d1 / ardoubles.length;
+        double d3 = Math.sqrt(d2);
+
+        return d3;
     }
-    
+
     //-------------------------------------------------------------------------
     /**
      * Returns standard deviation from an array of values with different 'weight' (e.g. probability)
@@ -426,7 +441,12 @@ public class SCStatistics {
             dsumweights += arweights[ii];
         }
         
-        return Math.sqrt((dsum_squares - dmean*dmean * dsumweights) / dsumweights);
+        double d1 = dsum_squares - dmean*dmean * dsumweights;
+        if(d1 < 1e-9) return 0.0;
+        double d2 = d1 / dsumweights;
+        double d3 = Math.sqrt(d2);
+
+        return d3;
     }
 
     //-------------------------------------------------------------------------
