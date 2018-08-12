@@ -344,7 +344,7 @@ public class SCAlgorithms {
             // add it and make recursive calls for right and left subintervals
             if(nsp.second != 0) {
                 sieve_maxdev(spans, times, values, 
-                             istart, nsp.first, numelements - 1,
+                             istart, nsp.first, numelements,
                              minseconds, 
                              bRegressionAnalysis, 
                              steady_range, steady_stdev,
