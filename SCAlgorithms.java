@@ -817,6 +817,8 @@ public class SCAlgorithms {
             int ff = var.f;
             double mm2 = var.m2;
 
+            if(mm2 < 1e-6) mm2 = 3.0 * SCConstants.SPEED_STEADY_STDEV; // prevent F-test with zero-variations (rare but possible situations)
+
             speed_intervals0.clear();
             sieve_maxdev(speed_intervals0, times, values, 
                          0, values.length, values.length,
@@ -868,6 +870,8 @@ public class SCAlgorithms {
                     mm2 = m2;
                 }
             }
+
+            if(mm2 < 1e-6) mm2 = 3.0 * SCConstants.COURSE_STEADY_STDEV; // prevent F-test with zero-variations (rare but possible situations)
 
             course_intervals0.clear();
             sieve_maxdev(course_intervals0, times, values, 
