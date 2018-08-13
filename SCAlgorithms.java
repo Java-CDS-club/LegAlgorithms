@@ -320,7 +320,7 @@ public class SCAlgorithms {
                 if (bcond) {
                     double dstdev2 = SCStatistics.stdev(values, ii, jj);
                     double test = dstdev2*dstdev2 / mm2;
-                    double quantile = SCStatistics.get99FQuantile((jj - ii - 1), ff);
+                    double quantile = SCStatistics.get95FQuantile((jj - ii - 1), ff);
                     bcond = (test <= quantile);
                 }
 
