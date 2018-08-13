@@ -117,10 +117,11 @@ public class SCAlgorithms {
      * @param  steady_range it will be considered that interval is steady if its max and min valueas are in this predefined range
      * @param  steady_stdev it will be considered that interval is steady if standard deviation is less then this predefined argument
      * @return ArrayList< SpanPair > - array of steady intervals extracted from totes
+     * @param range_limit if range (in an interval) exceeds this value, we cannot consider it as a steady-interval regardless of what mathematical statistics says
      * todo min_elapsedtime instead of minelements
      * todo it should be optimized. It can run significantly faster.
      */
-    public static ArrayList<SpanPair> fifo_maxdev(double[] times, double[] values, double mintimes, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
+    public static ArrayList<SpanPair> fifo_maxdev(double[] times, double[] values, double mintimes, boolean bRegressionAnalysis, double steady_range, double steady_stdev, double range_limit) {
         if (times.length != values.length)
             throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_maxdev - input arrays of different length");
 
@@ -138,14 +139,16 @@ public class SCAlgorithms {
             final double dmin = SCStatistics.min(values, istart, iend);
             final double dstdev = SCStatistics.stdev(values, istart, iend);
 
-            // if all the values are in the predefined small range or
+            // If range exceeds predefined limits, it cannot be steady-interval.
+            // If all the values are in the predefined small range or
             // if they deviate within the numbers precision (2 decimals, here)
-            // we can drop out calculations and consider it to be steady course/speed interval
-            if (steady_range >= (dmax - dmin) || steady_stdev >= dstdev)
+            // we can drop out calculations and consider it to be steady course/speed interval.
+            if(dmax - dmin >= 10/*range_limit*/)
+                bcondition = false;
+            else if (steady_range >= (dmax - dmin) || steady_stdev >= dstdev)
                 bcondition = true;
-            else {
+            else
                 bcondition = areDeviationsInAllowedLimits(values, istart, iend, steady_stdev);
-            }
 
             if(!bcondition || values.length == iend) {
 
@@ -798,7 +801,7 @@ public class SCAlgorithms {
         double[] values = SCStatistics.getSpeeds(totes);
 
         // Apply max-deviation + regression check algorithm
-        ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_maxdev(times, values, mintimes, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
+        ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_maxdev(times, values, mintime, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV, range_limit);
 
         // Remove redundant intervals (peaks, holes). They all have non-homogeneous variance. The return value is considered as average variance for this dataset.
         SCStatistics.Variance var = SCStatistics.isolateNonHomogeneous(speed_intervals0, values, SCConstants.SPEED_STEADY_STDEV);
@@ -841,7 +844,7 @@ public class SCAlgorithms {
         double[] values = SCStatistics.getHeadings(totes);
 
         // Apply max-deviation + regression check algorithm
-        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_maxdev(times, values, mintimes, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
+        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_maxdev(times, values, mintime, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV, range_limit);
 
         // sieving
         System.out.println("\nPlease, wait. Sieve algorithm is working... \n");
