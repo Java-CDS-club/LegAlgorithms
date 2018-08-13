@@ -23,12 +23,12 @@ public class Steady_course {
             double mintime = 300.0; // 5min = 300sec
 
             // Finding out steady-course periods
-            ArrayList<SCAlgorithms.SpanPair> course0_intervals = SCAlgorithms.extractStaedyHeadings(totes, mintime);
+            ArrayList<SCAlgorithms.SpanPair> course0_intervals = SCAlgorithms.extractSteadyHeadings(totes, mintime);
             System.out.println("\nSteady course intervals:");
             printIntervals(course0_intervals);
 
             // Finding out steady-speed periods
-            ArrayList<SCAlgorithms.SpanPair> speed0_intervals = SCAlgorithms.extractStaedySpeeds(totes, mintime);
+            ArrayList<SCAlgorithms.SpanPair> speed0_intervals = SCAlgorithms.extractSteadySpeeds(totes, mintime);
             System.out.println("\nSteady speed intervals:");
             printIntervals(speed0_intervals);
             

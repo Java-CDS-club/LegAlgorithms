@@ -805,6 +805,8 @@ public class SCAlgorithms {
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getSpeeds(totes);
 
+        double range_limit = 1.5; // range cannot exceed this limit in a steady-speed interval
+
         // Apply max-deviation + regression check algorithm
         ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_maxdev(times, values, mintime, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV, range_limit);
 
@@ -822,14 +824,14 @@ public class SCAlgorithms {
             speed_intervals0.clear();
             sieve_maxdev(speed_intervals0, times, values, 
                          0, values.length, values.length,
-                         mintimes, // 300 seconds (i.e 5min) for min-steady period
+                         mintime,
                          true, 
                          SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV,
                          ff, mm2);
         }
                     
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
-        adjustDevTouchingIntervals(times, values, speed_intervals0, mintimes, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
+        adjustDevTouchingIntervals(times, values, speed_intervals0, mintime, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
 
         // Merge neighboring steady-speed intervals (those that pass statistical equal-means test)
         // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
@@ -849,6 +851,8 @@ public class SCAlgorithms {
 
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getHeadings(totes);
+
+        double range_limit = 20.0; // range cannot exceed this limit in a steady-speed interval
 
         // Apply max-deviation + regression check algorithm
         ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_maxdev(times, values, mintime, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV, range_limit);
@@ -876,14 +880,14 @@ public class SCAlgorithms {
             course_intervals0.clear();
             sieve_maxdev(course_intervals0, times, values, 
                          0, values.length, values.length,
-                         mintimes, // 300 seconds for min-steady period
+                         mintime,
                          true, 
                          SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV,
                          ff, mm2);
         }
                     
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
-        adjustDevTouchingIntervals(times, values, course_intervals0, mintimes, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
+        adjustDevTouchingIntervals(times, values, course_intervals0, mintime, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
         // Merge neighboring steady-course intervals (those that pass statistical equal-means test)
         // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
