@@ -789,15 +789,13 @@ public class SCAlgorithms {
     /**
      * Creates an array of steady-speed intervals from an input array of totes.
      * @param  totes given ArrayList of Tote objects
+     * @param mintime elapsed interval time in seconds. Interval cannot be considered as steady-speed interval if the elapsed time is less than mintime (usually 300sec)
      * @return ArrayList< SpanPair > - array of steady-speed intervals extracted from totes
      */
-    public static ArrayList<SpanPair> extractStaedySpeeds(ArrayList<Tote> totes) {
+    public static ArrayList<SpanPair> extractSteadySpeeds(ArrayList<Tote> totes, double mintime) {
 
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getSpeeds(totes);
-
-        // An interval cannot be considered a steady-speed interval if the elapsed time is less than 5min
-        double mintimes = 300.0;
 
         // Apply max-deviation + regression check algorithm
         ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_maxdev(times, values, mintimes, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
@@ -834,15 +832,13 @@ public class SCAlgorithms {
     /**
      * Creates an array of steady-course intervals from an input array of totes.
      * @param  totes given ArrayList of Tote objects
+     * @param mintime elapsed interval time in seconds. Interval cannot be considered as steady-speed interval if the elapsed time is less than mintime (usually 300sec)
      * @return ArrayList< SpanPair > - array of steady-course intervals extracted from totes
      */
-    public static ArrayList<SpanPair> extractStaedyHeadings(ArrayList<Tote> totes) {
+    public static ArrayList<SpanPair> extractSteadyHeadings(ArrayList<Tote> totes, double mintime) {
 
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getHeadings(totes);
-
-        // An interval cannot be considered a steady-speed interval if the elapsed time is less than 5min
-        double mintimes = 300.0;
 
         // Apply max-deviation + regression check algorithm
         ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_maxdev(times, values, mintimes, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
