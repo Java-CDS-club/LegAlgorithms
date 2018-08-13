@@ -132,7 +132,12 @@ public class SCAlgorithms {
         boolean bfirstpass = true;
 
         while ((istart < values.length - 1) && (iend <= values.length)) {
-            while(times[iend - 1] - times[istart] < mintimes) iend++;
+            while((iend <= values.length) && (times[iend - 1] - times[istart] < mintimes))
+                iend++;
+            
+            // if the end of arrays is reached and the is still not long enough, break the loop
+            if(iend > values.length)
+                break;
 
             boolean bcondition;
             final double dmax = SCStatistics.max(values, istart, iend);
