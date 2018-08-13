@@ -794,6 +794,47 @@ public class SCAlgorithms {
     }
 
     //-------------------------------------------------------------------------
+    // the difference between connectNeighboring and mergeDevIntervals is that the second function (mergeDevIntervals)
+    // is based on the tests of mathematical statistics. The first one is simply merging (without any statistics) 
+    // if mean values are close enough.
+    public static void mergeSimpleIntervals(double[] values, ArrayList<SpanPair> intervals, double tolerable_diff) {
+        // find neighboring intervals with minumal mean-value difference
+        int index = -1;
+        double mindiff = tolerable_diff;
+        for(int ii=0, jj=1; jj < intervals.size(); ii++, jj++) {
+            SpanPair interval1 = intervals.get(ii);
+            SpanPair interval2 = intervals.get(jj);
+
+            // connect only neighboring/touching intervals
+            if(interval1.second != interval2.first)
+                continue;
+
+            // examine this interval-pair
+            double mean1 = SCStatistics.mean(values, interval1.first, interval1.second);
+            double mean2 = SCStatistics.mean(values, interval2.first, interval2.second);
+            double diff = mean1 - mean2;
+            if(diff < mindiff) {
+                index = ii;
+                mindiff = diff;
+            }
+        }
+
+        // if there are suitable intervals for connection - connect them
+        if( (index != -1) && (mindiff < tolerable_diff) ) {
+            SpanPair interval1 = intervals.get(index);
+            SpanPair interval2 = intervals.get(index+1);
+            System.out.println("merged simple: (" + interval1.first + "," + interval1.second + ") - (" + interval2.first + "," + interval2.second + ")");
+            // enhance the first interval
+            interval1.second = interval2.second;
+            // remove the second interval
+            intervals.remove(index+1);
+
+            // recursive call
+            mergeSimpleIntervals(values, intervals, tolerable_diff);
+        }
+    }
+
+    //-------------------------------------------------------------------------
     /**
      * Creates an array of steady-speed intervals from an input array of totes.
      * @param  totes given ArrayList of Tote objects
@@ -836,6 +877,9 @@ public class SCAlgorithms {
         // Merge neighboring steady-speed intervals (those that pass statistical equal-means test)
         // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
         // ArrayList<SCAlgorithms.SpanPair> speed_intervals2 = mergeDevIntervals(times, values, speed_intervals0);
+
+        // eventually, this function can be called just to smooth the results (no statistics inside)
+        //mergeSimpleIntervals(values, speed_intervals0, 1.0);
 
         return speed_intervals0;
     }
@@ -892,6 +936,9 @@ public class SCAlgorithms {
         // Merge neighboring steady-course intervals (those that pass statistical equal-means test)
         // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
         // ArrayList<SCAlgorithms.SpanPair> course_intervals1 = mergeDevIntervals(times, values, course_intervals0);
+
+        // eventually, this function can be called just to smooth the results (no statistics inside)
+        //mergeSimpleIntervals(values, course_intervals0, 5.0);
 
         return course_intervals0;
     }
