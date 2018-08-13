@@ -20,13 +20,15 @@ public class Steady_course {
             SCFileReader myreader = new SCFileReader();
             ArrayList<Tote> totes = myreader.process("OtherOwnship_Trimmed.txt");
 
+            double mintime = 300.0; // 5min = 300sec
+
             // Finding out steady-course periods
-            ArrayList<SCAlgorithms.SpanPair> course0_intervals = SCAlgorithms.extractStaedyHeadings(totes);
+            ArrayList<SCAlgorithms.SpanPair> course0_intervals = SCAlgorithms.extractStaedyHeadings(totes, mintime);
             System.out.println("\nSteady course intervals:");
             printIntervals(course0_intervals);
 
             // Finding out steady-speed periods
-            ArrayList<SCAlgorithms.SpanPair> speed0_intervals = SCAlgorithms.extractStaedySpeeds(totes);
+            ArrayList<SCAlgorithms.SpanPair> speed0_intervals = SCAlgorithms.extractStaedySpeeds(totes, mintime);
             System.out.println("\nSteady speed intervals:");
             printIntervals(speed0_intervals);
             
