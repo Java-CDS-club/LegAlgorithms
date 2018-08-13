@@ -665,6 +665,8 @@ public class SCStatistics {
                 continue;
             }
 
+            if(disp.m2 < 1e-6) disp.m2 = 3.0 * steady_stdev; // prevent F-test with zero-value and devzero error
+
             double test = disp_i.m2 / disp.m2;
             double quantile = get99FQuantile(disp_i.f, disp.f);
             if(test <= quantile) {
