@@ -76,6 +76,7 @@ public class SCFileReader {
      * @param  line string line in .rep file
      * @return Tote tote - the tote created from a line in the file
     */
+    double previousHeading = 180.0; // suitable initial value
     public Tote createTote(String line) {
         Tote tote = new Tote();
         try {
@@ -85,6 +86,9 @@ public class SCFileReader {
                 tote.sdate = parts[0].trim();
                 tote.stime = parts[1].trim();
                 tote.dheading = Double.parseDouble(parts[12].trim());
+                if(previousHeading - tote.dheading > 180.0)
+                    tote.dheading += 360.0;
+                previousHeading = tote.dheading;
                 tote.dspeed = Double.parseDouble(parts[13].trim());
                 tote.dabsolute_time = toAbsoluteTime(tote.sdate, tote.stime);
             }
