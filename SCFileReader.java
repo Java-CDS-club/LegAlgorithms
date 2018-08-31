@@ -100,11 +100,17 @@ public class SCFileReader {
     //-------------------------------------------------------------------------
     /**
      * Returns elapsed seconds from midnight 1970-01-01 
-     * @param  sdate date in YYYYMMDD format
+     * @param  sdate date in YYYYMMDD or YYMMDD format
      * @param stime time in HHMMSS.SSS format
      * @return double desconds - seconds from midnight 1970-01-01
      */
     public double toAbsoluteTime(String sdate, String stime) {
+        if(sdate.length() == 6) {
+            if(sdate.startsWith("0") || sdate.startsWith("1"))
+                sdate = "20" + sdate;
+            else
+                sdate = "19" + sdate;
+        }
         LocalDate date = LocalDate.parse(sdate, DateTimeFormatter.BASIC_ISO_DATE);
         long iepoch_days = date.toEpochDay();
         double dseconds = 24 * 3600 * iepoch_days;
