@@ -5,13 +5,20 @@ import java.util.Iterator;
 public class Steady_course {
 
     //-------------------------------------------------------------------------
-	static void printIntervals(ArrayList<SCAlgorithms.SpanPair> intervals) /*throws IOException*/ {
+	static void printIntervals(ArrayList<SCAlgorithms.SpanPair> intervals, ArrayList<Tote> totes) /*throws IOException*/ {
 		Iterator<SCAlgorithms.SpanPair> iter = intervals.iterator();
 		while(iter.hasNext()) {
 			SCAlgorithms.SpanPair item = iter.next();
-			System.out.println(String.format("%5d", item.first) + " " + String.format("%5d", item.second));
-		}
-	}
+
+            // times in hhmm.ss format
+            double dstart_time = 0.01 * Double.parseDouble(totes.get(item.first).stime);
+            double dend_time =  0.01 * Double.parseDouble(totes.get(item.second - 1).stime);
+            String sstart_time = String.format("%07.2f", dstart_time);
+            String send_time = String.format("%07.2f", dend_time);
+
+            System.out.println(String.format("%5d", item.first) + " " + String.format("%5d", item.second) + "  (" + sstart_time + " - " + send_time + ")");
+        }
+    }
 
     //=========================================================================
     public static void main(String[] args) {
@@ -25,17 +32,17 @@ public class Steady_course {
             // Finding out steady-course periods
             ArrayList<SCAlgorithms.SpanPair> course0_intervals = SCAlgorithms.extractSteadyHeadings(totes, mintime);
             System.out.println("\nSteady course intervals:");
-            printIntervals(course0_intervals);
+            printIntervals(course0_intervals, totes);
 
             // Finding out steady-speed periods
             ArrayList<SCAlgorithms.SpanPair> speed0_intervals = SCAlgorithms.extractSteadySpeeds(totes, mintime);
             System.out.println("\nSteady speed intervals:");
-            printIntervals(speed0_intervals);
+            printIntervals(speed0_intervals, totes);
             
             // Combine them
             ArrayList<SCAlgorithms.SpanPair> steady_CourseAndSpeed_intervals = SCAlgorithms.intersectLists(course0_intervals, speed0_intervals);
             System.out.println("\nSteady course-speed combined intervals:");
-            printIntervals(steady_CourseAndSpeed_intervals);
+            printIntervals(steady_CourseAndSpeed_intervals, totes);
 
             // Trace the results
             //System.out.println("There are " + (any list from above).size() + " steady course intervals.");
