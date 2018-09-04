@@ -148,7 +148,7 @@ public class SCAlgorithms {
             // If all the values are in the predefined small range or
             // if they deviate within the numbers precision (2 decimals, here)
             // we can drop out calculations and consider it to be steady course/speed interval.
-            if(dmax - dmin >= 10/*range_limit*/)
+            if(dmax - dmin >= range_limit)
                 bcondition = false;
             else if (steady_range >= (dmax - dmin) || steady_stdev >= dstdev)
                 bcondition = true;
