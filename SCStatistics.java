@@ -221,7 +221,7 @@ public class SCStatistics {
      */
     public static double max(double[] ardoubles) {
 
-        double dmax = Double.MIN_VALUE;
+        double dmax = -Double.MAX_VALUE;
         for (int ii=0; ii<ardoubles.length; ii++)
             dmax = Double.max(dmax, ardoubles[ii]);
 
@@ -259,7 +259,7 @@ public class SCStatistics {
         if (ardoubles.length < iend)
             throw new IndexOutOfBoundsException("Calling ScStatistics.max - 'iend' index (" + iend + ") is greater than array length.");
 
-        double dmax = Double.MIN_VALUE;
+        double dmax = -Double.MAX_VALUE;
         for (int ii=istart; ii<iend; ii++)
             dmax = Double.max(dmax, ardoubles[ii]);
 
