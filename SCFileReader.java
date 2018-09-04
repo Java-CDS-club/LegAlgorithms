@@ -89,6 +89,8 @@ public class SCFileReader {
                 tote.dheading = Double.parseDouble(parts[12].trim());
                 if(previousHeading - tote.dheading > 180.0)
                     tote.dheading += 360.0;
+                else if(tote.dheading - previousHeading > 180.0)
+                    tote.dheading -= 360.0;
                 previousHeading = tote.dheading;
                 tote.dspeed = Double.parseDouble(parts[13].trim());
                 tote.dabsolute_time = toAbsoluteTime(tote.sdate, tote.stime);
