@@ -62,8 +62,9 @@ public class SCFileReader {
     public ArrayList<Tote> splitLines(List<String> lines) {
         ArrayList<Tote> arrayl_totes = new ArrayList<>();
         for (String line : lines) {
-            if (line.trim().isEmpty()) continue;
-            arrayl_totes.add(createTote(line.trim()));
+            String sline = line.trim();
+            if (sline.isEmpty() || sline.startsWith(";;")) continue;
+            arrayl_totes.add(createTote(sline));
         }
         return arrayl_totes;
     }
