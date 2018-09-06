@@ -108,7 +108,7 @@ public class SCFileReader {
     /**
      * Returns elapsed seconds from midnight 1970-01-01 
      * @param  sdate date in YYYYMMDD or YYMMDD format
-     * @param stime time in HHMMSS.SSS format
+     * @param stime time in HHMMSS.SSS or HMMSS.SSS format
      * @return double desconds - seconds from midnight 1970-01-01
      */
     public double toAbsoluteTime(String sdate, String stime) {
@@ -122,9 +122,19 @@ public class SCFileReader {
         long iepoch_days = date.toEpochDay();
         double dseconds = 24 * 3600 * iepoch_days;
         
-        String shours = stime.substring(0, 2);
-        String smins = stime.substring(2, 4);
-        String ssecs = stime.substring(4);
+        String shours, smins, ssecs;
+        int pospoint = stime.indexOf('.');
+        String sinttime = pospoint != -1 ? stime.substring(0, pospoint) : stime;
+        if(sinttime.length() == 6) {
+            shours = stime.substring(0, 2);
+            smins = stime.substring(2, 4);
+            ssecs = stime.substring(4);
+        }
+        else {
+            shours = "0" + stime.substring(0, 1);
+            smins = stime.substring(1, 3);
+            ssecs = stime.substring(3);
+        }
         String stime_iso = shours + ":" + smins + ":" + ssecs;
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_LOCAL_TIME;
         LocalTime time = LocalTime.parse(stime_iso, dateTimeFormatter);
