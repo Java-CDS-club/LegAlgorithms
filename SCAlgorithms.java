@@ -846,7 +846,7 @@ public class SCAlgorithms {
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getSpeeds(totes);
 
-        double range_limit = 1.5; // range cannot exceed this limit in a steady-speed interval
+        double range_limit = 0.75; // range cannot exceed this limit in a steady-speed interval
 
         // Apply max-deviation + regression check algorithm
         ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_maxdev(times, values, mintime, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV, range_limit);
