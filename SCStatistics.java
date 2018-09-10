@@ -672,6 +672,9 @@ public class SCStatistics {
             if(test <= quantile) {
                 disp.f = disp_i.f;
                 disp.m2 = disp_i.m2;
+                retval.index = disp_i.index;
+                retval.f = disp_i.f;
+                retval.m2 = disp_i.m2;
             }
             else {
                 // Take the last good variance (the biggist one) as reference variance for sieve algorithm. 
