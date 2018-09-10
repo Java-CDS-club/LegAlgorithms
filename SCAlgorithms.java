@@ -856,20 +856,18 @@ public class SCAlgorithms {
 
         // sieving
         System.out.println("\nPlease, wait. Sieve algorithm is working... \n");
-        if(speed_intervals0.size() > 1) {
-            int ff = var.f;
-            double mm2 = var.m2;
+        int ff = var.f;
+        double mm2 = var.m2;
 
-            if(mm2 < 1e-6) mm2 = 3.0 * SCConstants.SPEED_STEADY_STDEV; // prevent F-test with zero-variations (rare but possible situations)
+        mm2 = Double.max(mm2, SCConstants.SPEED_STEADY_STDEV); // prevent F-test with zero-variations (rare but possible situations)
 
-            speed_intervals0.clear();
-            sieve_maxdev(speed_intervals0, times, values, 
-                         0, values.length, values.length,
-                         mintime,
-                         true, 
-                         SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV,
-                         ff, mm2);
-        }
+        speed_intervals0.clear();
+        sieve_maxdev(speed_intervals0, times, values,
+                     0, values.length, values.length,
+                     mintime,
+                     true,
+                     SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV,
+                     ff, mm2);
                     
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
         adjustDevTouchingIntervals(times, values, speed_intervals0, mintime, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
@@ -903,32 +901,30 @@ public class SCAlgorithms {
 
         // sieving
         System.out.println("\nPlease, wait. Sieve algorithm is working... \n");
-        if(course_intervals0.size() > 1) {
-            // find out referent variance for sieving
-            int ff = 0;
-            double mm2 = Double.MIN_VALUE;
-            for(int ii=0; ii<course_intervals0.size(); ii++) {
-                int index_start = course_intervals0.get(ii).first;
-                int index_end = course_intervals0.get(ii).second;
-                int numelements = index_end - index_start;
-                double dstdev = SCStatistics.stdev(values, index_start, index_end);
-                double m2 = dstdev*dstdev;
-                if(m2 > mm2) {
-                    ff = numelements - 1;
-                    mm2 = m2;
-                }
+        // find out referent variance for sieving
+        int ff = 0;
+        double mm2 = Double.MIN_VALUE;
+        for(int ii=0; ii<course_intervals0.size(); ii++) {
+            int index_start = course_intervals0.get(ii).first;
+            int index_end = course_intervals0.get(ii).second;
+            int numelements = index_end - index_start;
+            double dstdev = SCStatistics.stdev(values, index_start, index_end);
+            double m2 = dstdev*dstdev;
+            if(m2 > mm2) {
+                ff = numelements - 1;
+                mm2 = m2;
             }
-
-            if(mm2 < 1e-6) mm2 = 3.0 * SCConstants.COURSE_STEADY_STDEV; // prevent F-test with zero-variations (rare but possible situations)
-
-            course_intervals0.clear();
-            sieve_maxdev(course_intervals0, times, values, 
-                         0, values.length, values.length,
-                         mintime,
-                         true, 
-                         SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV,
-                         ff, mm2);
         }
+
+        mm2 = Double.max(mm2, SCConstants.COURSE_STEADY_STDEV); // prevent F-test with zero-variations (rare but possible situations)
+
+        course_intervals0.clear();
+        sieve_maxdev(course_intervals0, times, values,
+                     0, values.length, values.length,
+                     mintime,
+                     true,
+                     SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV,
+                     ff, mm2);
                     
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
         adjustDevTouchingIntervals(times, values, course_intervals0, mintime, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
