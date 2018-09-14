@@ -23,13 +23,14 @@ public class SCFileReader {
     /**
      * Reads Debrief file and populates corresponding data structure
      * @param  path a path to the (.rep) file which should be read and processed
+     * @param num_lines 
      * @return ArrayList<Tote> arrayl_totes - array list of created Totes
      */
-    public ArrayList<Tote> process(String path) {
+    public List<Tote> process(String path) {
         File file = new File(path);
         List<String> lines = readFile(file);
         ArrayList<Tote> arrayl_totes = splitLines(lines);
-
+        
         return arrayl_totes;
     }
 

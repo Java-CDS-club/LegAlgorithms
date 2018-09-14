@@ -1,11 +1,11 @@
 
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class Steady_course {
 
     //-------------------------------------------------------------------------
-	static void printIntervals(ArrayList<SCAlgorithms.SpanPair> intervals, ArrayList<Tote> totes) /*throws IOException*/ {
+	static void printIntervals(List<SCAlgorithms.SpanPair> intervals, List<Tote> totes) /*throws IOException*/ {
 		Iterator<SCAlgorithms.SpanPair> iter = intervals.iterator();
 		while(iter.hasNext()) {
 			SCAlgorithms.SpanPair item = iter.next();
@@ -25,22 +25,22 @@ public class Steady_course {
         
     	try {
             SCFileReader myreader = new SCFileReader();
-            ArrayList<Tote> totes = myreader.process("OtherOwnship_Trimmed.txt");
+            List<Tote> totes = myreader.process("OtherOwnship_Trimmed.txt");
 
             double mintime = 300.0; // 5min = 300sec
 
             // Finding out steady-course periods
-            ArrayList<SCAlgorithms.SpanPair> course0_intervals = SCAlgorithms.extractSteadyHeadings(totes, mintime);
+            List<SCAlgorithms.SpanPair> course0_intervals = SCAlgorithms.extractSteadyHeadings(totes, mintime);
             System.out.println("\nSteady course intervals:");
             printIntervals(course0_intervals, totes);
 
             // Finding out steady-speed periods
-            ArrayList<SCAlgorithms.SpanPair> speed0_intervals = SCAlgorithms.extractSteadySpeeds(totes, mintime);
+            List<SCAlgorithms.SpanPair> speed0_intervals = SCAlgorithms.extractSteadySpeeds(totes, mintime);
             System.out.println("\nSteady speed intervals:");
             printIntervals(speed0_intervals, totes);
             
             // Combine them
-            ArrayList<SCAlgorithms.SpanPair> steady_CourseAndSpeed_intervals = SCAlgorithms.intersectLists(course0_intervals, speed0_intervals);
+            List<SCAlgorithms.SpanPair> steady_CourseAndSpeed_intervals = SCAlgorithms.intersectLists(course0_intervals, speed0_intervals);
             System.out.println("\nSteady course-speed combined intervals:");
             printIntervals(steady_CourseAndSpeed_intervals, totes);
 

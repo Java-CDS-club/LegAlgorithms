@@ -1,6 +1,7 @@
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class SCAlgorithms {
 
@@ -116,16 +117,16 @@ public class SCAlgorithms {
      * @param bRegressionAnalysis perform regression analysis if true
      * @param  steady_range it will be considered that interval is steady if its max and min valueas are in this predefined range
      * @param  steady_stdev it will be considered that interval is steady if standard deviation is less then this predefined argument
-     * @return ArrayList< SpanPair > - array of steady intervals extracted from totes
+     * @return List< SpanPair > - array of steady intervals extracted from totes
      * @param range_limit if range (in an interval) exceeds this value, we cannot consider it as a steady-interval regardless of what mathematical statistics says
      * todo min_elapsedtime instead of minelements
      * todo it should be optimized. It can run significantly faster.
      */
-    public static ArrayList<SpanPair> fifo_maxdev(double[] times, double[] values, double mintimes, boolean bRegressionAnalysis, double steady_range, double steady_stdev, double range_limit) {
+    public static List<SpanPair> fifo_maxdev(double[] times, double[] values, double mintimes, boolean bRegressionAnalysis, double steady_range, double steady_stdev, double range_limit) {
         if (times.length != values.length)
             throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_maxdev - input arrays of different length");
 
-        ArrayList<SpanPair> periods = new ArrayList<>();
+        List<SpanPair> periods = new ArrayList<>();
 
         int istart=0;
         int iend = istart + 1;
@@ -207,15 +208,15 @@ public class SCAlgorithms {
      * @param bRegressionAnalysis perform regression analysis if true
      * @param  steady_range it will be considered that interval is steady if its max and min valueas are in this predefined range
      * @param  steady_stdev it will be considered that interval is steady if standard deviation is less then this predefined argument
-     * @return ArrayList< SpanPair > - array of steady intervals extracted from totes
+     * @return List< SpanPair > - array of steady intervals extracted from totes
      * todo min_elapsedtime instead of minelements
      * todo it should be optimized. It can run significantly faster.
      */
-    public static ArrayList<SpanPair> fifo_maxrange(double[] times, double[] values, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
+    public static List<SpanPair> fifo_maxrange(double[] times, double[] values, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
         if (times.length != values.length)
             throw new IndexOutOfBoundsException("Calling ScStatistics.fifo_maxrange - input arrays of different length");
 
-        ArrayList<SpanPair> periods = new ArrayList<>();
+        List<SpanPair> periods = new ArrayList<>();
 
         int istart=0;
         int iend = istart + minelements;
@@ -293,7 +294,7 @@ public class SCAlgorithms {
      * @param mm2 referent variance for the F-test used in sieve-algorithm
      * todo it should be optimized. It can run significantly faster.
      */
-    public static void sieve_maxdev(ArrayList<SpanPair> spans, 
+    public static void sieve_maxdev(List<SpanPair> spans, 
                                     double[] times, double[] values, 
                                     int istart, int iend, int numelems,
                                     double minseconds,
@@ -511,10 +512,10 @@ public class SCAlgorithms {
      * @param  periods_in the array of steady course/speed intervals
      * todo it should be optimized. It can run significantly faster
      */
-    public static ArrayList<SpanPair> mergeDevIntervals(double[] times, double[] values, ArrayList<SpanPair> periods_in) {
+    public static List<SpanPair> mergeDevIntervals(double[] times, double[] values, List<SpanPair> periods_in) {
 
         // todo: throw here... if empty list etc.
-        ArrayList<SpanPair> periods_out = new ArrayList<>();
+        List<SpanPair> periods_out = new ArrayList<>();
 
         Iterator<SpanPair> iter = periods_in.iterator();
         SpanPair out = iter.next();           
@@ -568,7 +569,7 @@ public class SCAlgorithms {
             }
         }
 
-        // last steady interval in the input arraylist
+        // last steady interval in the input List
         periods_out.add(out);
 
         return periods_out;
@@ -580,12 +581,12 @@ public class SCAlgorithms {
      * Criterion that has to be fulfilled - the maximal range (in merged interval) has to be within allowed limits
      * @param  values the array of values
      * @param  periods_in the array of steady course/speed intervals
-     * @return ArrayList<SpanPair> - new list of merged intervals.
+     * @return List<SpanPair> - new list of merged intervals.
      * todo it should be optimized. It can run significantly faster
      */
-    public static ArrayList<SpanPair> mergeRangeIntervals(double[] values, ArrayList<SpanPair> periods_in) {
+    public static List<SpanPair> mergeRangeIntervals(double[] values, List<SpanPair> periods_in) {
         // todo: throw here...
-        ArrayList<SpanPair> periods_out = new ArrayList<>();
+        List<SpanPair> periods_out = new ArrayList<>();
 
         SpanPair in = periods_in.get(0);
         SpanPair out = new SpanPair(in.first, in.second);
@@ -607,7 +608,7 @@ public class SCAlgorithms {
 
             if(cond) {
                 out.second = merging.second;
-                if(periods_in.size()-1 == jj) // last steady interval in the input arraylist
+                if(periods_in.size()-1 == jj) // last steady interval in the input List
                     periods_out.add(out);
 
                 continue;
@@ -615,7 +616,7 @@ public class SCAlgorithms {
 
             periods_out.add(out);
             out = new SpanPair(merging.first, merging.second);
-            if(periods_in.size()-1 == jj) // last steady interval in the input arraylist
+            if(periods_in.size()-1 == jj) // last steady interval in the input List
                 periods_out.add(out);
         }
 
@@ -627,10 +628,10 @@ public class SCAlgorithms {
      * Intersects two lists of intervals (e.g. steady course and steady speed intervals).
      * @param  first the first list of intervals (the list has to be ordered)
      * @param  second the second list of intervals (the list has to be ordered)
-     * @return ArrayList<SpanPair> - Returns new list of a combined/intersected intervals.
+     * @return List<SpanPair> - Returns new list of a combined/intersected intervals.
      */
-    public static ArrayList<SpanPair> intersectLists(ArrayList<SpanPair> first, ArrayList<SpanPair> second) {
-        ArrayList<SpanPair> intersection = new ArrayList<>();
+    public static List<SpanPair> intersectLists(List<SpanPair> first, List<SpanPair> second) {
+        List<SpanPair> intersection = new ArrayList<>();
 
         // examine and treat properly all the topological possibilities
 
@@ -676,7 +677,7 @@ public class SCAlgorithms {
      * @param  steady_stdev it will be considered that deviations are
      * in allowed limits if standard deviation is less then this predefined argument
      */
-    public static void adjustDevTouchingIntervals(double[] times, double[] values, ArrayList<SpanPair> periods, double mintimes, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
+    public static void adjustDevTouchingIntervals(double[] times, double[] values, List<SpanPair> periods, double mintimes, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
 
         // Iterate through the list, having in focus only neighboring intervals
         for(int ii=0, jj=1; jj<periods.size(); ii++, jj++) {
@@ -746,8 +747,8 @@ public class SCAlgorithms {
      * @param  steady_stdev it will be considered that deviations are
      * in allowed limits if standard deviation is less then this predefined argument
      */
-    //public static ArrayList<SpanPair> merge_intervals(double[] values, ArrayList<SpanPair> periods_in) {
-    public static void adjustRangeTouchingIntervals(double[] times, double[] values, ArrayList<SpanPair> periods, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
+    //public static List<SpanPair> merge_intervals(double[] values, List<SpanPair> periods_in) {
+    public static void adjustRangeTouchingIntervals(double[] times, double[] values, List<SpanPair> periods, int minelements, boolean bRegressionAnalysis, double steady_range, double steady_stdev) {
 
         // Iterate through the list, having in focus only neighboring intervals
         for(int ii=0, jj=1; jj<periods.size(); ii++, jj++) {
@@ -797,7 +798,7 @@ public class SCAlgorithms {
     // the difference between connectNeighboring and mergeDevIntervals is that the second function (mergeDevIntervals)
     // is based on the tests of mathematical statistics. The first one is simply merging (without any statistics) 
     // if mean values are close enough.
-    public static void mergeSimpleIntervals(double[] values, ArrayList<SpanPair> intervals, double tolerable_diff) {
+    public static void mergeSimpleIntervals(double[] values, List<SpanPair> intervals, double tolerable_diff) {
         // find neighboring intervals with minumal mean-value difference
         int index = -1;
         double mindiff = tolerable_diff;
@@ -837,11 +838,11 @@ public class SCAlgorithms {
     //-------------------------------------------------------------------------
     /**
      * Creates an array of steady-speed intervals from an input array of totes.
-     * @param  totes given ArrayList of Tote objects
+     * @param  totes given List of Tote objects
      * @param mintime elapsed interval time in seconds. Interval cannot be considered as steady-speed interval if the elapsed time is less than mintime (usually 300sec)
-     * @return ArrayList< SpanPair > - array of steady-speed intervals extracted from totes
+     * @return List< SpanPair > - array of steady-speed intervals extracted from totes
      */
-    public static ArrayList<SpanPair> extractSteadySpeeds(ArrayList<Tote> totes, double mintime) {
+    public static List<SpanPair> extractSteadySpeeds(List<Tote> totes, double mintime) {
 
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getSpeeds(totes);
@@ -849,13 +850,13 @@ public class SCAlgorithms {
         double range_limit = 0.75; // range cannot exceed this limit in a steady-speed interval
 
         // Apply max-deviation + regression check algorithm
-        ArrayList<SCAlgorithms.SpanPair> speed_intervals0 = fifo_maxdev(times, values, mintime, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV, range_limit);
+        List<SCAlgorithms.SpanPair> speed_intervals0 = fifo_maxdev(times, values, mintime, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV, range_limit);
 
         // Remove redundant intervals (peaks, holes). They all have non-homogeneous variance. The return value is considered as average variance for this dataset.
         SCStatistics.Variance var = SCStatistics.isolateNonHomogeneous(speed_intervals0, values, SCConstants.SPEED_STEADY_STDEV);
 
         // sieving
-        System.out.println("\nPlease, wait. Sieve algorithm is working... \n");
+    //    System.out.println("\nPlease, wait. Sieve algorithm is working... \n");
         int ff = var.f;
         double mm2 = var.m2;
 
@@ -874,7 +875,7 @@ public class SCAlgorithms {
 
         // Merge neighboring steady-speed intervals (those that pass statistical equal-means test)
         // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
-        // ArrayList<SCAlgorithms.SpanPair> speed_intervals2 = mergeDevIntervals(times, values, speed_intervals0);
+        // List<SCAlgorithms.SpanPair> speed_intervals2 = mergeDevIntervals(times, values, speed_intervals0);
 
         // eventually, this function can be called just to smooth the results (no statistics inside)
         //mergeSimpleIntervals(values, speed_intervals0, 1.0);
@@ -885,11 +886,11 @@ public class SCAlgorithms {
     //-------------------------------------------------------------------------
     /**
      * Creates an array of steady-course intervals from an input array of totes.
-     * @param  totes given ArrayList of Tote objects
+     * @param  totes given List of Tote objects
      * @param mintime elapsed interval time in seconds. Interval cannot be considered as steady-speed interval if the elapsed time is less than mintime (usually 300sec)
-     * @return ArrayList< SpanPair > - array of steady-course intervals extracted from totes
+     * @return List< SpanPair > - array of steady-course intervals extracted from totes
      */
-    public static ArrayList<SpanPair> extractSteadyHeadings(ArrayList<Tote> totes, double mintime) {
+    public static List<SpanPair> extractSteadyHeadings(List<Tote> totes, double mintime) {
 
         double[] times = SCStatistics.getRelativeTimes(totes);
         double[] values = SCStatistics.getHeadings(totes);
@@ -897,10 +898,10 @@ public class SCAlgorithms {
         double range_limit = 20.0; // range cannot exceed this limit in a steady-speed interval
 
         // Apply max-deviation + regression check algorithm
-        ArrayList<SCAlgorithms.SpanPair> course_intervals0 = fifo_maxdev(times, values, mintime, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV, range_limit);
+        List<SCAlgorithms.SpanPair> course_intervals0 = fifo_maxdev(times, values, mintime, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV, range_limit);
 
         // sieving
-        System.out.println("\nPlease, wait. Sieve algorithm is working... \n");
+    //    System.out.println("\nPlease, wait. Sieve algorithm is working... \n");
         // find out referent variance for sieving
         int ff = 0;
         double mm2 = Double.MIN_VALUE;
@@ -931,7 +932,7 @@ public class SCAlgorithms {
 
         // Merge neighboring steady-course intervals (those that pass statistical equal-means test)
         // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
-        // ArrayList<SCAlgorithms.SpanPair> course_intervals1 = mergeDevIntervals(times, values, course_intervals0);
+        // List<SCAlgorithms.SpanPair> course_intervals1 = mergeDevIntervals(times, values, course_intervals0);
 
         // eventually, this function can be called just to smooth the results (no statistics inside)
         //mergeSimpleIntervals(values, course_intervals0, 5.0);

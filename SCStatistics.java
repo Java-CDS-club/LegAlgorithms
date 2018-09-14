@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * SCStatistics - utility methods of mathematical statistics. Various tools for extracting data patterns 
@@ -52,23 +53,23 @@ public class SCStatistics {
 	
     //-------------------------------------------------------------------------
     /**
-     * Creates a double array of time values from an ArrayList of totes
-     * @param  totes given ArrayList of Tote objects
+     * Creates a double array of time values from an List of totes
+     * @param  totes given List of Tote objects
      * @return double[] - array of absolute times extracted from totes
      */
-    public static double[] getTimes(ArrayList<Tote> totes) {
+    public static double[] getTimes(List<Tote> totes) {
         return getTimes(totes, 0, totes.size());
     }
 
     //-------------------------------------------------------------------------
     /**
-     * Creates a double array of absolute time values from an ArrayList of totes within the given indexes
-     * @param  totes given ArrayList of Tote objects
+     * Creates a double array of absolute time values from an List of totes within the given indexes
+     * @param  totes given List of Tote objects
      * @param  istart (inclusive) lower index of the totes-array segment extracted for calculation
      * @param  iend (exclusive) upper index of the totes-array segment extracted for calculation
      * @return double[] - array of absolute times extracted from totes
      */
-    public static double[] getTimes(ArrayList<Tote> totes, int istart, int iend) {
+    public static double[] getTimes(List<Tote> totes, int istart, int iend) {
 
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.getTimes - 'istart' index (" + istart + ") is less than 0.");
@@ -89,23 +90,23 @@ public class SCStatistics {
 
     //-------------------------------------------------------------------------
     /**
-     * Creates a double array of relative time values from an ArrayList of totes within the given indexes. The values are relative to the first time in list i.e the elapsed times from totes[istart] are recorded.
-     * @param  totes given ArrayList of Tote objects
+     * Creates a double array of relative time values from an List of totes within the given indexes. The values are relative to the first time in list i.e the elapsed times from totes[istart] are recorded.
+     * @param  totes given List of Tote objects
      * @return double[] - array of relative times extracted from totes
      */
-    public static double[] getRelativeTimes(ArrayList<Tote> totes) {
+    public static double[] getRelativeTimes(List<Tote> totes) {
         return getRelativeTimes(totes, 0, totes.size());
     }
 
     //-------------------------------------------------------------------------
     /**
-     * Creates a double array of relative time values from an ArrayList of totes within the given indexes. The values are relative to the first time in list i.e the elapsed times from totes[istart] are recorded.
-     * @param  totes given ArrayList of Tote objects
+     * Creates a double array of relative time values from an List of totes within the given indexes. The values are relative to the first time in list i.e the elapsed times from totes[istart] are recorded.
+     * @param  totes given List of Tote objects
      * @param  istart (inclusive) lower index of the totes-array segment extracted for calculation
      * @param  iend (exclusive) upper index of the totes-array segment extracted for calculation
      * @return double[] - array of relative times extracted from totes
      */
-    public static double[] getRelativeTimes(ArrayList<Tote> totes, int istart, int iend) {
+    public static double[] getRelativeTimes(List<Tote> totes, int istart, int iend) {
 
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.getRelativeTimes - 'istart' index (" + istart + ") is less than 0.");
@@ -127,11 +128,11 @@ public class SCStatistics {
 
     //-------------------------------------------------------------------------
     /**
-     * Creates a double array of speed values from an ArrayList of totes
-     * @param  totes given ArrayList of Tote objects
+     * Creates a double array of speed values from an List of totes
+     * @param  totes given List of Tote objects
      * @return double[] - array of speeds extracted form totes
      */
-    public static double[] getSpeeds(ArrayList<Tote> totes) {
+    public static double[] getSpeeds(List<Tote> totes) {
 
         int index = 0;
         double[] da = new double[totes.size()];
@@ -144,13 +145,13 @@ public class SCStatistics {
 
     //-------------------------------------------------------------------------
     /**
-     * Creates a double array of speed values from an ArrayList of totes within the given indexes
-     * @param  totes given ArrayList of Tote objects
+     * Creates a double array of speed values from an List of totes within the given indexes
+     * @param  totes given List of Tote objects
      * @param  istart (inclusive) lower index of the totes-array segment extracted for calculation
      * @param  iend (exclusive) upper index of the totes-array segment extracted for calculation
      * @return double[] - array of speeds extracted form totes
      */
-    public static double[] getSpeeds(ArrayList<Tote> totes, int istart, int iend) {
+    public static double[] getSpeeds(List<Tote> totes, int istart, int iend) {
 
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.getSpeeds - 'istart' index (" + istart + ") is less than 0.");
@@ -171,11 +172,11 @@ public class SCStatistics {
 
     //-------------------------------------------------------------------------
     /**
-     * Creates a double array of heading values from an ArrayList of totes
-     * @param  totes given ArrayList of Tote objects
+     * Creates a double array of heading values from an List of totes
+     * @param  totes given List of Tote objects
      * @return double[] - array of headings extracted form totes
      */
-    public static double[] getHeadings(ArrayList<Tote> totes) {
+    public static double[] getHeadings(List<Tote> totes) {
 
         double[] dl = new double[totes.size()];
         int index = 0;
@@ -188,13 +189,13 @@ public class SCStatistics {
 	
     //-------------------------------------------------------------------------
     /**
-     * Creates a double array of sheading values from an ArrayList of totes within the given indexes
-     * @param  totes given ArrayList of Tote objects
+     * Creates a double array of sheading values from an List of totes within the given indexes
+     * @param  totes given List of Tote objects
      * @param  istart (inclusive) lower index of the totes-array segment extracted for calculation
      * @param  iend (exclusive) upper index of the totes-array segment extracted for calculation
      * @return double[] - array of headings extracted form totes
      */
-    public static double[] getHeadings(ArrayList<Tote> totes, int istart, int iend) {
+    public static double[] getHeadings(List<Tote> totes, int istart, int iend) {
 
         if (0 > istart)
             throw new IndexOutOfBoundsException("Calling ScStatistics.getHeadings - 'istart' index (" + istart + ") is less than 0.");
@@ -633,11 +634,11 @@ public class SCStatistics {
      * by this parameter (this parameter is usually the decimal precision of written values)
      * @return referent variance and degrees of freedom. (needed in sieve algorithms)
      */
-    public static Variance isolateNonHomogeneous(ArrayList<SCAlgorithms.SpanPair> intervals, double[] values, double steady_stdev) {
+    public static Variance isolateNonHomogeneous(List<SCAlgorithms.SpanPair> intervals, double[] values, double steady_stdev) {
 
         Variance retval = new Variance(0, 1, 1.0);
 
-        ArrayList<Variance> _variances = new ArrayList<>();
+        List<Variance> _variances = new ArrayList<>();
         for(int ii=0; ii<intervals.size(); ii++) {
             int index_start = intervals.get(ii).first;
             int index_end = intervals.get(ii).second;
@@ -654,7 +655,7 @@ public class SCStatistics {
         int f0 = _variances.get(0).f;
         double m20 = _variances.get(0).m2;
         Variance disp = new Variance(_variances.size(), f0, m20);
-        ArrayList<Integer> for_remove = new ArrayList<>();
+        List<Integer> for_remove = new ArrayList<>();
         for(int ii = 1; ii < _variances.size(); ii++  ) {
             Variance disp_i = _variances.get(ii);
             double d1 = Math.sqrt(disp_i.m2);
