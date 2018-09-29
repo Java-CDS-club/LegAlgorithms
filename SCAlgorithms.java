@@ -27,7 +27,7 @@ public class SCAlgorithms {
      * @param  iend (exclusive) upper index of the sub-array
      * @param  steady_stdev it will be considered that deviations are
      * in allowed limits if standard deviation is less then this predefined argument
-     * @return boolean - true if we can consider regression line horizontal
+     * @return boolean - true if we can consider that the deviations are within the allowed limits
      */
     static boolean areDeviationsInAllowedLimits(double[] values, int istart, int iend, double steady_stdev) {
 
