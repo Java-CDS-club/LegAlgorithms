@@ -166,9 +166,9 @@ public class SCAlgorithms {
                     // Is horizontal line - linear regression analysis. If not, iterate backward until finding horizontal line.
                     if(bRegressionAnalysis) {
                         do {
-                            cond_regression = isRegressionLineHorizontal(times, values, istart, iend-1, steady_range);
-                           } while (!cond_regression && times[--iend - 1] - times[istart] >= mintimes);
-                        }
+                           cond_regression = isRegressionLineHorizontal(times, values, istart, iend-1, steady_range);
+                        } while (!cond_regression && times[--iend - 1] - times[istart] >= mintimes);
+                     }
 
                     if(!bRegressionAnalysis || cond_regression) {
                         if(shiftDevIntervalRight(times, values, istart, iend-1, bRegressionAnalysis, steady_stdev)) {
