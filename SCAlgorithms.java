@@ -48,6 +48,32 @@ public class SCAlgorithms {
 
     //-------------------------------------------------------------------------
     /**
+     * Returns true if we all the deviations from mean value are within the statistically allowed limits
+     * (hypothesis |x(i)-x'| = 0 is tested; alternative hypothesis is |x(i)-x'| > 0
+     * test value (x(i)-x')/sigma(x)*sqrt(n-1)/sqrt(n) has Student(0,1) distribution with n-2 degrees of freedom)
+     * @param  numeelements number of elements in the interval
+     * @param  dmax the maximal value inside the interval
+     * @param  dmin the minimal element inside the interval
+     * @param  dmean the average value of the elements inside the interval
+     * @param  dstdev statistical standard deviation
+     * @param  steady_stdev it will be considered that deviations are
+     * in allowed limits if standard deviation is less then this predefined argument
+     * @return boolean - true if we can consider that the deviations are within the allowed limits
+     */
+    static boolean areDeviationsInAllowedLimits(int numelements, double dmax, double dmin, double dmean, double dstdev, double steady_stdev) {
+
+        if (dstdev < steady_stdev) // Preventing devzero errors
+            return true;
+
+        final double ddeviation = Double.max(dmax - dmean, dmean - dmin);
+        final double dtest = ddeviation / dstdev * Math.sqrt(numelements / (numelements-1));
+        final double dquantile = numelements > 2 ? SCStatistics.get99StudentQuantil(numelements - 2) : SCStatistics.get99StudentQuantil(numelements - 1);
+
+        return dtest <= dquantile;
+    }
+
+    //-------------------------------------------------------------------------
+    /**
      * Returns true if the maximal range in an interval is within the statistically allowed limits.
      * Test value (max(x)-min(x))/sigma(range) should be less then corresponding quantile
      * @param  values the array of values
