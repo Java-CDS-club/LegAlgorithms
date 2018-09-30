@@ -1207,7 +1207,7 @@ public class SCStatistics {
         	sumvv += v*v;
         }
         
-        result.sigma0 = Math.sqrt(sumvv / (N22 - 2));
+        result.sigma0 = Math.sqrt(sumvv / (num - 2));
         
         result.ma = result.sigma0 * Math.sqrt(Qx11);
         result.mb = result.sigma0 * Math.sqrt(Qx22);
