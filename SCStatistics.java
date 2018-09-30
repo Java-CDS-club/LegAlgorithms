@@ -49,6 +49,16 @@ public class SCStatistics {
         // ... and their estimated standard error (i.e reciprocal accuracy)
         double ma;
         double mb;
+
+        // parameters needed for performance ehancement (i.e. to avoid recalculating of the same sums again)
+        double N11;
+        double N12;
+        double n1;
+        double n2;
+        double det;
+
+        // true/false if regression line is/isn't horizontal (default is false)
+        boolean isHorizontal = false;
     }
 	
     //-------------------------------------------------------------------------
