@@ -1171,50 +1171,49 @@ public class SCStatistics {
         result.iend = iend;
         
         // find out the estimated values of basic linear regression parameters (a, b)
-        int num = iend - istart;	// number of elements in the arrays
-        double N11 = 0.0;           // sum(x*x)
-        double N12 = 0.0;           // sum(x)
+        int num = iend - istart;    // number of elements in the arrays
+        result.N11 = 0.0;           // sum(x*x)
+        result.N12 = 0.0;           // sum(x)
         double N22 = num;
         
-        double n1 = 0.0;            // -sum(x*y)
-        double n2 = 0.0;            // -sum(y)
+        result.n1 = 0.0;            // -sum(x*y)
+        result.n2 = 0.0;            // -sum(y)
         
         for(int ii=istart; ii<iend; ii++) {
-            N11 += x[ii] * x[ii];
-            N12 += x[ii];
-            n1 -= x[ii] * y[ii];
-            n2 -= y[ii];
+            result.N11 += x[ii] * x[ii];
+            result.N12 += x[ii];
+            result.n1 -= x[ii] * y[ii];
+            result.n2 -= y[ii];
         }
         
-        double det = N11 * N22 - N12*N12; 
-        if (det < 0) // N is positive definite matrix and 'det' should be always positive
+        result.det = result.N11 * N22 - result.N12 * result.N12; 
+        if (result.det < 0) // N is positive definite matrix and 'det' should be always positive
             throw new IllegalStateException("Calling ScStatistics.lregression - negative determinant of positive definite matrix. It should not be possible.");
         
-        double Qx11 =  N22 / det;
-        double Qx12 = -N12 / det;
-        double Qx22 =  N11 / det;
+        double Qx11 =         N22 / result.det;
+        double Qx12 = -result.N12 / result.det;
+        double Qx22 =  result.N11 / result.det;
         		
-        result.a = -(Qx11*n1 + Qx12*n2);        // -( sumxy * num   + sumx  * sumy ) / det;
-        result.b = -(Qx12*n1 + Qx22*n2);        // -( sumx  * sumxy - sumxx * sumy ) / det;
+        result.a = -(Qx11*result.n1 + Qx12*result.n2);        // -( sumxy * num   + sumx  * sumy ) / det;
+        result.b = -(Qx12*result.n1 + Qx22*result.n2);        // -( sumx  * sumxy - sumxx * sumy ) / det;
         
         // accuracy, standard deviations, allowed errors...
         double sumvv = 0.0;
         double vmax = Double.MIN_VALUE; // redundant; just for tests
         for(int jj=istart; jj<iend; jj++) {
         	double yest = x[jj]*result.a + result.b;	// estimated (expected) value
-        	double v = y[jj] - yest;					// residuals - measured value minus expected value
+        	double v = y[jj] - yest;			// residuals - measured value minus expected value
         	vmax = Double.max(vmax, Math.abs(v));
         	sumvv += v*v;
         }
         
-        result.sigma0 = Math.sqrt(sumvv / (num - 2));
+        result.sigma0 = Math.sqrt(sumvv / (N22 - 2));
         
         result.ma = result.sigma0 * Math.sqrt(Qx11);
         result.mb = result.sigma0 * Math.sqrt(Qx22);
         
-        
         result.taumax = Double.MIN_VALUE;
-	for(int ii=istart; ii<iend; ii++) {
+        for(int ii=istart; ii<iend; ii++) {
         	double v = y[ii] - (x[ii]*result.a + result.b);
         	double Qv = 1. - (Qx11*x[ii]*x[ii] + 2*Qx12*x[ii] + Qx22);
         	double tau = Math.abs(v) / (result.sigma0 * Math.sqrt(Qv));
@@ -1222,7 +1221,6 @@ public class SCStatistics {
         }
 
         return result;
-    }
 }
 
 /*
