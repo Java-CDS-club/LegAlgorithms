@@ -197,11 +197,6 @@ public class SCAlgorithms {
                      }
 
                     if(!bRegressionAnalysis || cond_regression) {
-                        if(shiftDevIntervalRight(times, values, istart, iend-1, bRegressionAnalysis, steady_stdev)) {
-                            istart++;
-                            continue;
-                        }
-
                         SpanPair sp = new SpanPair(istart, (iend != values.length ? --iend : iend));
                         periods.add(sp);
 
