@@ -1204,7 +1204,7 @@ public class SCStatistics {
         
         
         result.taumax = Double.MIN_VALUE;
-        for(int ii=0; ii<num; ii++) {
+	for(int ii=istart; ii<iend; ii++) {
         	double v = y[ii] - (x[ii]*result.a + result.b);
         	double Qv = 1. - (Qx11*x[ii]*x[ii] + 2*Qx12*x[ii] + Qx22);
         	double tau = Math.abs(v) / (result.sigma0 * Math.sqrt(Qv));
