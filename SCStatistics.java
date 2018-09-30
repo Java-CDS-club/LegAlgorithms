@@ -1223,6 +1223,103 @@ public class SCStatistics {
         return result;
 }
 
+    //-------------------------------------------------------------------------
+    /**
+     * Returns the set of resulting parameters to analyze linear regression
+     * @param  x given domain array
+     * @param  y given value array
+     * @param  res0 old regression parameters (they are going to be altered in this function)
+     * @param  istartnew new lower index of the sub-array (inclusive) 
+     * @param  iendnew new upper index of the sub-array (exclusive) 
+     */
+    public static void lregressionEx(double[] x, double[] y, RegrResults res0, int istartnew, int iendnew) {
+
+        if (0 > istartnew)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.lregressionEx - 'istart' index (" + istartnew + ") is less than 0.");
+
+        if (x.length < iendnew - istartnew)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.lregressionEx - 'iend' index (" + iendnew + ") is greater than array length.");
+
+        if (x.length != y.length)
+            throw new IndexOutOfBoundsException("Calling ScStatistics.lregressionEx - input arrays of different size.");
+
+//        if(istartnew == res0.istart && iendnew == res0.iend)  
+//            return;
+       
+        // find out the estimated values of basic linear regression parameters (a, b)
+        int num = iendnew - istartnew;    // number of elements in the arrays
+        double N22 = num;
+        
+        // include new elements or exclude the old ones (left edge)
+        if(istartnew < res0.istart) {
+            for(int ii=istartnew; ii<res0.istart; ii++) {
+                res0.N11 += x[ii] * x[ii];
+                res0.N12 += x[ii];
+                res0.n1 -= x[ii] * y[ii];
+                res0.n2 -= y[ii];
+            }
+        }
+        else if(istartnew > res0.istart) {
+            for(int ii=res0.istart; ii<istartnew; ii++) {
+                res0.N11 -= x[ii] * x[ii];
+                res0.N12 -= x[ii];
+                res0.n1 += x[ii] * y[ii];
+                res0.n2 += y[ii];
+            }
+        }
+        
+        // include new elements or exclude the old ones (right edge)
+        if(iendnew > res0.iend) {
+            for(int ii=res0.iend; ii<iendnew; ii++) {
+                res0.N11 += x[ii] * x[ii];
+                res0.N12 += x[ii];
+                res0.n1 -= x[ii] * y[ii];
+                res0.n2 -= y[ii];
+            }
+        }
+        else if(iendnew < res0.iend) {
+            for(int ii=iendnew; ii<res0.iend; ii++) {
+                res0.N11 -= x[ii] * x[ii];
+                res0.N12 -= x[ii];
+                res0.n1 += x[ii] * y[ii];
+                res0.n2 += y[ii];
+            }
+        }
+
+        res0.det = res0.N11 * N22 - res0.N12 * res0.N12; 
+        if (res0.det < 0) // N is positive definite matrix and 'det' should be always positive
+            throw new IllegalStateException("Calling ScStatistics.lregression - negative determinant of positive definite matrix. It should not be possible.");
+        
+        double Qx11 =       N22 / res0.det;
+        double Qx12 = -res0.N12 / res0.det;
+        double Qx22 =  res0.N11 / res0.det;
+        		
+        res0.a = -(Qx11*res0.n1 + Qx12*res0.n2);        // -( sumxy * num   + sumx  * sumy ) / det;
+        res0.b = -(Qx12*res0.n1 + Qx22*res0.n2);        // -( sumx  * sumxy - sumxx * sumy ) / det;
+        
+        // accuracy, standard deviations, allowed errors...
+        double sumvv = 0.0;
+        res0.taumax = Double.MIN_VALUE;
+        for(int jj=istartnew; jj<iendnew; jj++) {
+            double yest = x[jj]*res0.a + res0.b;	// estimated (expected) value
+            double v = Math.abs(y[jj] - yest);		// residuals - measured value minus expected value
+            double Qv = 1. - (Qx11*x[jj]*x[jj] + 2*Qx12*x[jj] + Qx22);
+            res0.taumax = Double.max(res0.taumax, v/Math.sqrt(Qv));
+            sumvv += v*v;
+        }
+
+        res0.sigma0 = Math.sqrt(sumvv / (num - 2));
+        
+        res0.taumax /= res0.sigma0;
+
+        res0.ma = res0.sigma0 * Math.sqrt(Qx11);
+        res0.mb = res0.sigma0 * Math.sqrt(Qx22);
+
+        res0.istart = istartnew;
+        res0.iend = iendnew;
+    }
+}
+
 /*
  * Linear regression in matrix notation (method of least squares):
  * 
