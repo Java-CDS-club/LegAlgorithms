@@ -368,18 +368,21 @@ public class SCStatistics {
      */
     public static double stdev(double[] ardoubles) {
 
-        double dmean = mean(ardoubles);
+        double dsum = 0.0;
         double dsum_squares = 0.0;
-        for (int ii=0; ii<ardoubles.length; ii++)
+        for (int ii=0; ii<ardoubles.length; ii++) {
+            dsum += ardoubles[ii];
             dsum_squares += ardoubles[ii]*ardoubles[ii];
+        }
 
+        double dmean = dsum / ardoubles.length;
         double d1 = dsum_squares - dmean*dmean * ardoubles.length;
         if(d1 < 1e-9) return 0.0;
         double d2 = d1 / (ardoubles.length - 1);
         double d3 = Math.sqrt(d2);
-
+    
         return d3;
-    }
+}
 
     //-------------------------------------------------------------------------
     /**
@@ -398,11 +401,14 @@ public class SCStatistics {
             throw new IndexOutOfBoundsException("Calling ScStatistics.stdev - 'iend' index (" + iend + ") is greater than array length.");
 
         int numelemets = iend - istart;
-        double dmean = mean(ardoubles, istart, iend);
+        double dsum = 0.0;
         double dsum_squares = 0.0;
-        for (int ii=istart; ii<iend; ii++)
+        for (int ii=istart; ii<iend; ii++) {
+            dsum += ardoubles[ii];
             dsum_squares += ardoubles[ii]*ardoubles[ii];
+        }
 
+        double dmean = dsum / numelemets;
         double d1 = dsum_squares - dmean*dmean * numelemets;
         if(d1 < 1e-9) return 0.0;
         double d2 = d1 / (numelemets - 1);
@@ -443,15 +449,19 @@ public class SCStatistics {
 
         if (ardoubles.length != arweights.length)
             throw new IndexOutOfBoundsException("Calling ScStatistics.weighted_mean - arrays of different length");
-	    
-        double dmean = weighted_mean(ardoubles, arweights);
+
+        double dsum = 0.0;
         double dsum_squares = 0.0;
         double dsumweights = 0.0;
         for (int ii=0; ii<ardoubles.length; ii++) {
-            dsum_squares += ardoubles[ii]*ardoubles[ii] * arweights[ii];
+            double dtemp = ardoubles[ii] * arweights[ii];
+            dsum += dtemp;
+            dtemp *= ardoubles[ii];
+            dsum_squares += dtemp;
             dsumweights += arweights[ii];
         }
-        
+
+        double dmean = dsum / dsumweights;
         double d1 = dsum_squares - dmean*dmean * dsumweights;
         if(d1 < 1e-9) return 0.0;
         double d2 = d1 / dsumweights;
