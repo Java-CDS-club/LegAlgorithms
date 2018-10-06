@@ -1255,11 +1255,11 @@ public class SCStatistics {
 
 //        if(istartnew == res0.istart && iendnew == res0.iend)  
 //            return;
-       
+
         // find out the estimated values of basic linear regression parameters (a, b)
         int num = iendnew - istartnew;    // number of elements in the arrays
         double N22 = num;
-        
+
         // include new elements or exclude the old ones (left edge)
         if(istartnew < res0.istart) {
             for(int ii=istartnew; ii<res0.istart; ii++) {
@@ -1277,7 +1277,7 @@ public class SCStatistics {
                 res0.n2 += y[ii];
             }
         }
-        
+
         // include new elements or exclude the old ones (right edge)
         if(iendnew > res0.iend) {
             for(int ii=res0.iend; ii<iendnew; ii++) {
@@ -1303,27 +1303,35 @@ public class SCStatistics {
         double Qx11 =       N22 / res0.det;
         double Qx12 = -res0.N12 / res0.det;
         double Qx22 =  res0.N11 / res0.det;
-        		
+
         res0.a = -(Qx11*res0.n1 + Qx12*res0.n2);        // -( sumxy * num   + sumx  * sumy ) / det;
         res0.b = -(Qx12*res0.n1 + Qx22*res0.n2);        // -( sumx  * sumxy - sumxx * sumy ) / det;
-        
+
         // accuracy, standard deviations, allowed errors...
         double sumvv = 0.0;
         res0.taumax = Double.MIN_VALUE;
         for(int jj=istartnew; jj<iendnew; jj++) {
-            double yest = x[jj]*res0.a + res0.b;	// estimated (expected) value
-            double v = Math.abs(y[jj] - yest);		// residuals - measured value minus expected value
+            double yest = x[jj]*res0.a + res0.b;        // estimated (expected) value
+            double v = Math.abs(y[jj] - yest);          // residuals - measured value minus expected value
             double Qv = 1. - (Qx11*x[jj]*x[jj] + 2*Qx12*x[jj] + Qx22);
             res0.taumax = Double.max(res0.taumax, v/Math.sqrt(Qv));
             sumvv += v*v;
         }
 
         res0.sigma0 = Math.sqrt(sumvv / (num - 2));
-        
+
         res0.taumax /= res0.sigma0;
 
         res0.ma = res0.sigma0 * Math.sqrt(Qx11);
         res0.mb = res0.sigma0 * Math.sqrt(Qx22);
+
+        double regression_grow = Math.abs(res0.a * (x[iendnew-1] - x[istartnew]));
+        res0.isHorizontal = regression_grow <= Double.max(steady_range, res0.sigma0);
+        if(!res0.isHorizontal && res0.ma > 1.e-8) {
+            double dtest = Math.abs(res0.a / res0.ma);
+            double dquantile = num > 2 ? SCStatistics.get99StudentQuantil(num - 2) : SCStatistics.get99StudentQuantil(1) ;
+            res0.isHorizontal= dtest <= dquantile;
+        }
 
         res0.istart = istartnew;
         res0.iend = iendnew;
