@@ -180,23 +180,23 @@ public class SCAlgorithms {
             else if (steady_range >= (dmax - dmin) || steady_stdev >= dstdev)
                 bcondition = true;
             else
-                bcondition = areDeviationsInAllowedLimits(values, istart, iend, steady_stdev);
+                bcondition = areDeviationsInAllowedLimits(iend - istart, dmax, dmin, dmean, dstdev, steady_stdev);
 
             if(!bcondition || values.length == iend) {
 
                 if(bfirstpass) // if no success; if no steady interval at the very beginning - then, iterate forward
                     iend = ++istart + 1;
                 else {
-                    boolean cond_regression = bRegressionAnalysis ? true : false;
+                    SCStatistics.RegrResults regr = new SCStatistics.RegrResults();
 
                     // Is horizontal line - linear regression analysis. If not, iterate backward until finding horizontal line.
                     if(bRegressionAnalysis) {
                         do {
-                           cond_regression = isRegressionLineHorizontal(times, values, istart, iend-1, steady_range);
-                        } while (!cond_regression && times[--iend - 1] - times[istart] >= mintimes);
-                     }
+                            SCStatistics.lregressionEx(times, values, regr, istart, iend-1, steady_range);
+                        } while(!regr.isHorizontal && times[--iend - 1] - times[istart] >= mintimes);
+                    }
 
-                    if(!bRegressionAnalysis || cond_regression) {
+                    if(!bRegressionAnalysis || regr.isHorizontal ) {
                         SpanPair sp = new SpanPair(istart, (iend != values.length ? --iend : iend));
                         periods.add(sp);
 
