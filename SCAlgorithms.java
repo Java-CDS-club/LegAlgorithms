@@ -113,9 +113,8 @@ public class SCAlgorithms {
     static boolean isRegressionLineHorizontal(double[] times, double[] values, int istart, int iend, double steady_range) {
         SCStatistics.RegrResults res = SCStatistics.lregression(times, values, istart, iend);
         final int numelements = iend - istart;
-        final double dstdev = SCStatistics.stdev(values, istart, iend);
         final double regression_grow = Math.abs(res.a * (times[iend-1] - times[istart]));
-        boolean cond1 = regression_grow <= Double.max(steady_range, dstdev);
+        boolean cond1 = regression_grow <= Double.max(steady_range, res.sigma0);
 
         // if regression line cannot increase significantly we can consider the line horizontal
         if (cond1) return true;
