@@ -301,6 +301,7 @@ public class SCAlgorithms {
      * Creates an array of steady value (course or speed) intervals from an
      * array of input values. The function produce optimal intervals: 
      * a) the sum of lengths is maximal b) the sum of squares of residuals is minimal.
+     * @param spans list of steady intervals (it is being filled by this function)
      * @param times the array of times
      * @param values the array of values
      * @param  istart (inclusive) lower index of the sub-array
@@ -312,6 +313,7 @@ public class SCAlgorithms {
      * @param steady_stdev it will be considered that interval is steady if standard deviation is less then this predefined argument
      * @param ff referent degrees of freedom for the F-test used in sieve-algorithm
      * @param mm2 referent variance for the F-test used in sieve-algorithm
+     * @param range_limit if range (in an interval) exceeds this value, we cannot consider it as a steady-interval regardless of what mathematical statistics says
      * todo it should be optimized. It can run significantly faster.
      */
     public static void sieve_maxdev(List<SpanPair> spans, 
@@ -320,12 +322,31 @@ public class SCAlgorithms {
                                     double minseconds,
                                     boolean bRegressionAnalysis, 
                                     double steady_range, double steady_stdev,
-                                    int ff, double mm2) {
+                                    int ff, double mm2,
+                                    double range_limit) {
 
         int minelements = 2; // min-time period cannot be less than two elements
         boolean btimespan = true;
 
         int numelements = Integer.min(iend - istart, numelems);
+        if(numelements < minelements) 
+            return;
+
+        int end_while = istart + numelements; 
+        double min_while = Double.MAX_VALUE;
+        double max_while = Double.MIN_VALUE;
+        double sum_while = 0.0;
+        double sumqv_while = 0.0;
+        for(int kk = istart; kk < end_while; kk++) {
+            double dval = values[kk];
+            min_while = Double.min(min_while, dval);
+            max_while = Double.max(max_while, dval);
+            sum_while += dval;
+            sumqv_while += dval*dval;
+        }
+        double mean_while = sum_while / numelements;
+        double stdev_while = Math.sqrt((sumqv_while - mean_while*mean_while * numelements) / (numelements - 1));
+
         while(numelements >= minelements) {
 
             if(!btimespan)
@@ -335,37 +356,87 @@ public class SCAlgorithms {
 
             SpanPair nsp = new SpanPair(0,0);
             double stdevmin = Double.MAX_VALUE;
+
+            double min_for = min_while;
+            double max_for = max_while;
+            double sum_for = sum_while;
+            double sumqv_for = sumqv_while;
+            double mean_for = mean_while;
+            double stdev_for = stdev_while;
+
+            SCStatistics.RegrResults regr = new SCStatistics.RegrResults();
+
             for(int ii = istart, jj = istart + numelements; jj<=iend; ii++, jj++) {
                 double dtime = times[jj-1] - times[ii];
                 if(dtime < minseconds) 
                     continue;
 
                 btimespan = true;
+                
+                boolean bcond = (max_for - min_for < range_limit);
 
-                // testing deviations
-                boolean bcond = areDeviationsInAllowedLimits(values, ii, jj, steady_stdev);
+                // testing whether deviations are in Allowed limits
+                if (bcond)
+                    bcond = areDeviationsInAllowedLimits(numelements, max_for, min_for, mean_for, stdev_for, steady_stdev);
 
                 // testing whether the variances are compatible (F-test)
                 if (bcond) {
-                    double dstdev2 = SCStatistics.stdev(values, ii, jj);
-                    double test = dstdev2*dstdev2 / mm2;
+                    double test = stdev_for*stdev_for / mm2;
                     double quantile = SCStatistics.get95FQuantile((jj - ii - 1), ff);
                     bcond = (test <= quantile);
                 }
 
                 // testing whether the regression line is horizontal
-                if (bcond)
-                    bcond = isRegressionLineHorizontal(times, values, ii, jj, steady_range);
+                if (bcond) {
+                    if(ii <= (regr.iend + regr.istart)/2)
+                        SCStatistics.lregressionEx(times, values, regr, ii, jj, steady_range);
+                    else {
+                        regr = SCStatistics.lregression(times, values, ii, jj);
+                        double regression_grow = Math.abs(regr.a * (times[jj-1] - times[ii]));
+                        regr.isHorizontal = regression_grow <= Double.max(steady_range, regr.sigma0);
+                        if(!regr.isHorizontal && regr.ma > 1.e-8) {
+                            double dtest = Math.abs(regr.a / regr.ma);
+                            double dquantile = numelements > 2 ? SCStatistics.get99StudentQuantil(numelements - 2) : SCStatistics.get99StudentQuantil(1) ;
+                            regr.isHorizontal= dtest <= dquantile;
+                        }
+                    }
+
+                    bcond = regr.isHorizontal;
+                }
 
                 // If an interval has just been found and if it is the best one, so far - remember it 
                 // (the optimization - the best interval (i.e. stdev = min) is being searched)
                 if(bcond) {
-                    double stdev = SCStatistics.stdev(values, ii, jj);
-                    if (stdev < stdevmin) {
-                        stdevmin = stdev;
+                    if (stdev_for < stdevmin) {
+                        stdevmin = stdev_for;
                         nsp.first = ii;
                         nsp.second = jj;
                     }                    
+                }
+
+                // update sum_for, sumqv_for, mean_for, stdev_for, min_for, max_for for the next for-loop
+                if(jj < iend) {
+                    double dleft  = values[ii];
+                    double dright = values[jj];
+
+                    sum_for -= dleft;
+                    sum_for += dright;
+
+                    sumqv_for -= dleft*dleft;
+                    sumqv_for += dright*dright;
+
+                    mean_for = sum_for / numelements;
+                    stdev_for = Math.sqrt((sumqv_for - mean_for*mean_for * numelements) / (numelements - 1));
+
+                    if(dright <= min_for)
+                        min_for = dright;
+                    else if(dleft == min_for)
+                        min_for = SCStatistics.min(values, ii+1, jj+1);
+
+                    if(dright >= max_for)
+                        max_for = dright;
+                    else if(dleft == max_for)
+                        max_for = SCStatistics.max(values, ii+1, jj+1);
                 }
             }
 
@@ -377,7 +448,8 @@ public class SCAlgorithms {
                              minseconds, 
                              bRegressionAnalysis, 
                              steady_range, steady_stdev,
-                             ff, mm2);
+                             ff, mm2,
+                             range_limit);
 
                 spans.add(new SpanPair(nsp.first, nsp.second));
 
@@ -386,13 +458,26 @@ public class SCAlgorithms {
                              minseconds, 
                              bRegressionAnalysis, 
                              steady_range, steady_stdev,
-                             ff, mm2);
+                             ff, mm2,
+                             range_limit);
 
                 return;
             }
-                
-            // if we came here, it means that no good interval has been found
-            numelements--;
+
+            // if we came here, it means that no good interval (with numelements) has been found
+
+            // update sum_while, sumqv_while, mean_while, stdev_while, min_while, max_while for the next while-loop
+            double dval = values[--end_while];
+            sum_while -= dval;
+            sumqv_while -= dval*dval;
+
+            mean_while = sum_while / --numelements;
+            stdev_while = Math.sqrt((sumqv_while - mean_while*mean_while * numelements) / (numelements - 1));
+
+            if(min_while == dval)
+                min_while = SCStatistics.min(values, istart, end_while);
+            if(max_while == dval)
+                max_while = SCStatistics.max(values, istart, end_while);
         }
     }
 
