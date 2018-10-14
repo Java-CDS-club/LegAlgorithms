@@ -973,7 +973,8 @@ public class SCAlgorithms {
                      mintime,
                      true,
                      SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV,
-                     ff, mm2);
+                     ff, mm2,
+                     range_limit);
                     
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
         adjustDevTouchingIntervals(times, values, speed_intervals0, mintime, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
@@ -1030,7 +1031,8 @@ public class SCAlgorithms {
                      mintime,
                      true,
                      SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV,
-                     ff, mm2);
+                     ff, mm2,
+                     range_limit);
                     
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
         adjustDevTouchingIntervals(times, values, course_intervals0, mintime, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
