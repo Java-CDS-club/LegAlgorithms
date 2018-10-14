@@ -1393,16 +1393,20 @@ public class SCStatistics {
  *               | -sumx  sumxx |
  *
  *
+ *
+ * Corrections:
+ * 
+ * v = A*x' + f
+ *
+ * Standard deviation of unit weight
+ *
+ * sigma0 = trans(v)* v / (n - 2)
+ * 
  * Standard deviation of estimated parameters:
  * 
  * ma = sigma0 * sqrt(Qx[11])
  * mb = sigma0 * sqrt(Qx[22])
  *
- *
- * Corrections:
- * 
- * v = A*x' + f
- * 
  * The covariance matrix of corrections:
  * 
  * Qv = E - A*Qx*trans(A)
@@ -1416,4 +1420,5 @@ public class SCStatistics {
  * tau[i] = v[i] / mv[i]  (should be less then corresponding quantile)
  * 
  */
+
 
