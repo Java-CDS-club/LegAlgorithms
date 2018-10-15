@@ -1239,10 +1239,11 @@ public class SCStatistics {
      * @param  x given domain array
      * @param  y given value array
      * @param  res0 old regression parameters (they are going to be altered in this function)
-     * @param  istartnew new lower index of the sub-array (inclusive) 
-     * @param  iendnew new upper index of the sub-array (exclusive) 
+     * @param  istartnew new lower index of the sub-array (inclusive)
+     * @param  iendnew new upper index of the sub-array (exclusive)
+     * @param  steady_range it will be considered that the regression line is horizontal if it grows within the these limits
      */
-    public static void lregressionEx(double[] x, double[] y, RegrResults res0, int istartnew, int iendnew) {
+    public static void lregressionEx(double[] x, double[] y, RegrResults res0, int istartnew, int iendnew, double steady_range) {
 
         if (0 > istartnew)
             throw new IndexOutOfBoundsException("Calling ScStatistics.lregressionEx - 'istart' index (" + istartnew + ") is less than 0.");
