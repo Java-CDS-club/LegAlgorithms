@@ -179,7 +179,7 @@ public class SCAlgorithms {
             else if (steady_range >= (dmax - dmin) || steady_stdev >= dstdev)
                 bcondition = true;
             else
-                bcondition = areDeviationsInAllowedLimits(iend - istart, dmax, dmin, dmean, dstdev, steady_stdev);
+                bcondition = areDeviationsInAllowedLimits(values, istart, iend, steady_stdev);
 
             if(!bcondition || values.length == iend) {
 
