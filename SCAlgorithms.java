@@ -979,6 +979,9 @@ public class SCAlgorithms {
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
         adjustDevTouchingIntervals(times, values, speed_intervals0, mintime, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
 
+        // Enhance the intervals by extending them eventually (needed in rare but possible cases).
+        extendIntervals(totes, cspeed_intervals0);
+        
         // Merge neighboring steady-speed intervals (those that pass statistical equal-means test)
         // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
         // List<SCAlgorithms.SpanPair> speed_intervals2 = mergeDevIntervals(times, values, speed_intervals0);
@@ -1037,6 +1040,9 @@ public class SCAlgorithms {
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
         adjustDevTouchingIntervals(times, values, course_intervals0, mintime, true, SCConstants.COURSE_STEADY_RANGE, SCConstants.COURSE_STEADY_STDEV);
 
+        // Enhance the intervals by extending them eventually (needed in rare but possible cases).
+        extendIntervals(totes, course_intervals0);
+        
         // Merge neighboring steady-course intervals (those that pass statistical equal-means test)
         // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
         // List<SCAlgorithms.SpanPair> course_intervals1 = mergeDevIntervals(times, values, course_intervals0);
@@ -1047,5 +1053,102 @@ public class SCAlgorithms {
         return course_intervals0;
     }
 
+    //-------------------------------------------------------------------------
+    /**
+     * Extends steady intervals to the left (overcoming the problem as depicted in:
+     * https://github.com/debrief/LegAlgorithms/blob/master/test_results/problem.png).
+     * @param totes given List of Tote objects
+     * @param intervals array of steady-course intervals extracted from totes
+     * @return List< SpanPair > - reference to the enhanced intervals
+     */
+    public static List<SpanPair> extendIntervalsLeft(List<Tote> totes, List<SpanPair> intervals) {
+        double[] values = SCStatistics.getHeadings(totes);
+        Iterator<SpanPair> iter = intervals.iterator();
+        int maxLeft = 0; // The most left value (inclusive) we can itarate to (maximal possible extension to the left).
+        while(iter.hasNext()) {
+            SCAlgorithms.SpanPair item = iter.next();
+            int istart = item.first;
+            int iend = item.second;
+            int nn = iend - istart;
+            double mean = SCStatistics.mean(values, istart, iend);
+            double stdev = SCStatistics.stdev(values, istart, iend);
+            double sumsq = stdev * stdev * (nn-1);
+            
+            while(istart > maxLeft) {
+                double delta = values[--istart] - mean; // calculate delta and increment istart
+                double dtest_value = Math.abs( delta / stdev );
+                if(dtest_value > 0.674) // quantil 0.674 - 50% of normally (gaussian) distributed values belong to this interval
+                {
+                    istart++;   // unsuccesfull test; reset the istart value...
+                    break;      // ... and stop testing anymore.
+                }
+                mean  += delta / ++nn;
+                sumsq += delta * delta * (nn-1) / nn ;
+                stdev = Math.sqrt(sumsq / (nn-1));
+            }
+            
+            item.first = istart;
+            maxLeft = item.second;
+        }
+    
+        return intervals;
+    }
+
+    //-------------------------------------------------------------------------
+    /**
+     * Extends steady intervals to the right (overcoming the problem as depicted in:
+     * https://github.com/debrief/LegAlgorithms/blob/master/test_results/problem.png).
+     * @param totes given List of Tote objects
+     * @param intervals array of steady-course intervals extracted from totes
+     * @return List< SpanPair > - reference to the enhanced intervals
+     */
+    public static List<SpanPair> extendIntervalsRight(List<Tote> totes, List<SpanPair> intervals) {
+        double[] values = SCStatistics.getHeadings(totes);
+        int maxRight = totes.size() - 1;  // The most right value (inclusive) we can itarate to (maximal possible extension to the right).
+        // iterate backwords; start just after the last element
+        ListIterator<SpanPair> iter = intervals.listIterator(intervals.size());
+        while(iter.hasPrevious()) {
+            SCAlgorithms.SpanPair item = iter.previous();
+            int istart = item.first;
+            int iend = item.second;
+            int nn = iend - istart;
+            double mean = SCStatistics.mean(values, istart, iend);
+            double stdev = SCStatistics.stdev(values, istart, iend);
+            double sumsq = stdev * stdev * (nn-1);
+            
+            while(iend < maxRight) {
+                double delta = values[++iend] - mean; // calculate delta and increment istart
+                double dtest_value = Math.abs( delta / stdev );
+                if(dtest_value > 0.674) // quantil 0.674 - 50% of normally (gaussian) distributed values belong to this interval
+                {
+                    iend--;   // unsuccesfull test; reset the istart value...
+                    break;      // ... and stop testing anymore.
+                }
+                mean  += delta / ++nn;
+                sumsq += delta * delta * (nn-1) / nn ;
+                stdev = Math.sqrt(sumsq / (nn-1));
+            }
+            
+            item.second = iend;
+            maxRight = item.first - 1;
+        }
+    
+        return intervals;
+    }
+
+    //-------------------------------------------------------------------------
+    /**
+     * Extends steady intervals to both left and right side (overcoming the problem as depicted
+     * in: https://github.com/debrief/LegAlgorithms/blob/master/test_results/problem.png).
+     * @param totes given List of Tote objects
+     * @param intervals array of steady-course intervals extracted from totes
+     * @return List< SpanPair > - reference to the enhanced intervals
+     */
+    public static List<SpanPair> extendIntervals(List<Tote> totes, List<SpanPair> intervals) {
+        extendIntervalsLeft(totes, intervals);
+        extendIntervalsRight(totes, intervals);
+        return intervals;
+    }
+    
 }
 
