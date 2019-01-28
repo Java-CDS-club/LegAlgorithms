@@ -1,6 +1,7 @@
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.List;
 
 public class SCAlgorithms {
@@ -979,9 +980,6 @@ public class SCAlgorithms {
         // Adjust touching steady-course intervals (criteria: sum of squares of deviations = min)
         adjustDevTouchingIntervals(times, values, speed_intervals0, mintime, true, SCConstants.SPEED_STEADY_RANGE, SCConstants.SPEED_STEADY_STDEV);
 
-        // Enhance the intervals by extending them eventually (needed in rare but possible cases).
-        extendIntervals(totes, cspeed_intervals0);
-        
         // Merge neighboring steady-speed intervals (those that pass statistical equal-means test)
         // (practically redundant and useless after using sieve algorithm. It can be tested but there should be no interavls for merging)
         // List<SCAlgorithms.SpanPair> speed_intervals2 = mergeDevIntervals(times, values, speed_intervals0);
